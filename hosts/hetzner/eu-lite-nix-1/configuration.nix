@@ -18,7 +18,7 @@
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  environment.variables.CLOUD_PROVIDER = builtins.baseNameOf (builtins.dirOf (builtins.dirOf ./.));
+  environment.variables.CLOUD_PROVIDER = builtins.baseNameOf (builtins.dirOf ./.); 
 
   mySystem.boot = {
     loader = "grub";
