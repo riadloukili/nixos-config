@@ -1,13 +1,16 @@
 { config, lib, pkgs, ... }:
 
 let
-  dir       = ./.;
-  entries   = builtins.readDir dir;
-  userFiles = lib.filter
-    (f: f != "default.nix" && lib.strings.hasSuffix ".nix" f)
-    (builtins.attrNames entries);
+  entries   = builtins.readDir ./.;
+  paths     = lib.attrValues entries;
+  nixFiles  = lib.filter (path:
+    builtins.match ".*\\.nix$" (builtins.basename path) != null
+  ) paths;
+  userFiles = lib.filter (path:
+    builtins.basename path != "default.nix"
+  ) nixFiles;
 in
 
-lib.foldl' (acc: name:
-  acc // import entries.${name}
+lib.foldl' (acc: thePath:
+  acc // import thePath
 ) {} userFiles
