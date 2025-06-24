@@ -9,5 +9,5 @@ let
 in
 
 lib.foldl' (acc: name:
-  acc // import (dir + "/" + name)
+  acc // import entries.${name}
 ) {} userFiles
