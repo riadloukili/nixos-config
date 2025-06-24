@@ -1,4 +1,4 @@
-{ lib, … }:
+{ lib, ... }:
 
 let
   allFiles = builtins.attrNames (builtins.readDir .);

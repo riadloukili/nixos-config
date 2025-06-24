@@ -23,7 +23,7 @@ Universal, flake-based NixOS configurations (stable 25.05 “Warbler”) for mul
 
    ```bash
    sudo nixos-install --flake .#<machine-id>
-   # …or, after first install…
+   # ...or, after first install...
    sudo nixos-rebuild switch --flake .#<machine-id>
    ```
 
@@ -69,7 +69,7 @@ nixos-config/
 3. **Write `configuration.nix`** in that folder. At minimum:
 
    ```nix
-   { config, pkgs, lib, … }:
+   { config, pkgs, lib, ... }:
    {
      imports = [ ./hardware-configuration.nix ];
      networking.hostName = "<machine-id>";
@@ -114,7 +114,7 @@ nixos-config/
 * **Define a user**: add `modules/users/<username>.nix`:
 
   ```nix
-  { config, lib, … }:
+  { config, lib, ... }:
   {
     users.users.<username> = {
       isNormalUser = true;
