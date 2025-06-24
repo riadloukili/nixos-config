@@ -12,7 +12,7 @@
     inputs.home-manager.nixosModules.home-manager
   ];
 
-  networking.hostName   = "eu-lite-nix-1";
+  networking.hostName   = builtins.baseNameOf ./.;
   time.timeZone         = "America/Toronto";
   i18n.defaultLocale    = "en_US.UTF-8";
 
