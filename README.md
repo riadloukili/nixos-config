@@ -22,10 +22,12 @@ Universal, flake-based NixOS configurations (stable 25.05 “Warbler”) for mul
 3. **Install or rebuild a host**
 
    ```bash
-   sudo nixos-install --flake .#<machine-id>
+   sudo nixos-install --flake .#<provider-machine-id>
    # ...or, after first install...
-   sudo nixos-rebuild switch --flake .#<machine-id>
+   sudo nixos-rebuild switch --flake .#<provider-machine-id>
    ```
+
+   Machine IDs are automatically generated as `<provider>-<machine>` (e.g., `hetzner-eu-lite-nix-1`).
 
 ## Repository layout
 
@@ -35,9 +37,13 @@ nixos-config/
 ├── README.md
 ├── modules/                  ← reusable module fragments
 │   ├── packages.nix          ← custom package-list option
+│   ├── services/             ← modular service configurations
+│   │   ├── openssh.nix       ← SSH service module
+│   │   ├── firewall.nix      ← firewall service module
+│   │   └── boot.nix          ← boot loader module
 │   └── users/                ← per-user SSH & account info
 │       ├── default.nix       ← imports all `<user>.nix`
-│       └── riad.nix
+│       └── riad.nix          ← includes home-manager config
 ├── profiles/                 ← high-level package profiles
 │   └── base.nix
 └── hosts/                    ← per-machine configs, grouped by provider
@@ -68,45 +74,68 @@ nixos-config/
 3. **Write `configuration.nix`** in that folder. At minimum:
 
    ```nix
-   { config, pkgs, lib, ... }:
+   { config, pkgs, lib, inputs, ... }:
    {
-     imports = [ ./hardware-configuration.nix ];
-     networking.hostName = "<machine-id>";
+     imports = [
+       ./hardware-configuration.nix
+       ../../../modules/packages.nix
+       ../../../modules/users
+       ../../../modules/services/openssh.nix
+       ../../../modules/services/firewall.nix
+       ../../../modules/services/boot.nix
+       ../../../profiles/base.nix
+       inputs.home-manager.nixosModules.home-manager
+     ];
+
+     networking.hostName = builtins.baseNameOf ./.;
      time.timeZone = "America/Toronto";
      i18n.defaultLocale = "en_US.UTF-8";
 
-     # Per-host sudo:
+     nix.settings.experimental-features = [ "nix-command" "flakes" ];
+     environment.variables.CLOUD_PROVIDER = builtins.baseNameOf (builtins.dirOf ./.); 
+
      users.users.<username>.extraGroups = [ "wheel" ];
+     users.defaultUserShell = pkgs.zsh;
+     programs.zsh.enable = true;
+     security.sudo.wheelNeedsPassword = false;
 
-     services.openssh.enable = true;
-     networking.firewall.allowedTCPPorts = [ 22 ];
+     mySystem.openssh = {
+       enable = true;
+       passwordAuthentication = false;
+       ports = [ 22 ];
+     };
 
-     # Custom packages:
-     mySystem.packages = [ pkgs.git pkgs.vim ];
+     mySystem.firewall = {
+       enable = true;
+       allowedTCPPorts = [ 22 ];
+     };
 
+     mySystem.boot = {
+       loader = "grub";
+       device = "/dev/sda";
+     };
+
+     home-manager = {
+       useGlobalPkgs = true;
+       useUserPackages = true;
+     };
+
+     mySystem.packages = [];
      system.stateVersion = "25.05";
    }
    ```
-4. **Expose it in `flake.nix`**
-   Under `nixosConfigurations`, add:
+4. **Machines are automatically discovered!**
+   
+   The flake automatically discovers all machines in the `hosts/` directory and creates configurations named `<provider>-<machine-id>`. No need to manually edit `flake.nix`!
 
-   ```nix
-   "my-new-vm" = nixpkgs.lib.nixosSystem {
-     system = "x86_64-linux";
-     modules = [
-       ./modules/packages.nix
-       ./modules/users
-       ./profiles/base.nix
-       ./hosts/<provider>/<machine-id>/configuration.nix
-     ];
-   };
-   ```
 5. **Install or rebuild**
 
    ```bash
-   sudo nixos-install --flake .#my-new-vm
+   sudo nixos-install --flake .#<provider>-<machine-id>
    # or later:
-   sudo nixos-rebuild switch --flake .#my-new-vm
+   sudo nixos-rebuild switch --flake .#<provider>-<machine-id>
+   # or use the rebuild alias once logged in:
+   rebuild
    ```
 
 ## Managing users
@@ -144,7 +173,11 @@ nixos-config/
 
 ## Useful commands
 
+* `nix flake show` — list all available machine configurations
+* `nix flake check` — validate flake syntax and configurations
 * `nix flake update` — update your Nixpkgs channel
-* `sudo nixos-install --flake .#<machine-id>` — fresh install
-* `sudo nixos-rebuild switch --flake .#<machine-id>` — apply changes live
-* `nixos-rebuild test --flake .#<machine-id>` — test without switching
+* `sudo nixos-install --flake .#<provider-machine-id>` — fresh install
+* `sudo nixos-rebuild switch --flake .#<provider-machine-id>` — apply changes live
+* `sudo nixos-rebuild test --flake .#<provider-machine-id>` — test without switching
+* `sudo nixos-rebuild build --flake .#<provider-machine-id>` — build without applying
+* `rebuild` — convenient alias that auto-detects provider and hostname
