@@ -18,7 +18,7 @@
   security.sudo.wheelNeedsPassword = false;
 
   services.openssh.enable               = true;
-  services.openssh.PasswordAuthentication = false;
+  services.openssh.passwordAuthentication = false;
 
   networking.firewall.enable           = true;
   networking.firewall.allowedTCPPorts  = [ 22 ];
