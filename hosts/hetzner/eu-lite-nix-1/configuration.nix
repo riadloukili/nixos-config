@@ -3,12 +3,12 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../../modules/packages.nix
-    ../../modules/users
-    ../../modules/services/openssh.nix
-    ../../modules/services/firewall.nix
-    ../../modules/services/boot.nix
-    ../../profiles/base.nix
+    ../../../modules/packages.nix
+    ../../../modules/users
+    ../../../modules/services/openssh.nix
+    ../../../modules/services/firewall.nix
+    ../../../modules/services/boot.nix
+    ../../../profiles/base.nix
     inputs.home-manager.nixosModules.home-manager
   ];
 
