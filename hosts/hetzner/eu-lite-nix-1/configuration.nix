@@ -18,6 +18,8 @@
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  environment.variables.CLOUD_PROVIDER = builtins.baseNameOf (builtins.dirOf (builtins.dirOf ./.));
+
   mySystem.boot = {
     loader = "grub";
     device = "/dev/sda";
