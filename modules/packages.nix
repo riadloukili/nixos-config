@@ -1,11 +1,18 @@
-{ config, pkgs, lib, options, ... }:
+{ config, lib, pkgs, types, ... }:
 
-with lib;
+{
+  options = {
+    mySystem = {
+      packages = lib.mkOption {
+        type = types.listOf types.package;
+        default = [];
+        description = "Additional system packages to install";
+      };
+    };
+  };
 
-options.mySystem.packages = mkOption {
-  type = types.listOf types.package;
-  default = [];
-  description = "Additional system packages to install";
-};
-
-config.environment.systemPackages = config.environment.systemPackages ++ config.mySystem.packages;
+  config = {
+    environment.systemPackages =
+      (config.environment.systemPackages or []) ++ config.mySystem.packages;
+  };
+}
