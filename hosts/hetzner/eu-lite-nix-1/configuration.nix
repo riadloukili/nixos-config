@@ -8,7 +8,7 @@
     ../../../modules/services/openssh.nix
     ../../../modules/services/firewall.nix
     ../../../modules/services/boot.nix
-    ../../../profiles/base.nix
+    ../../../profiles/server.nix
     inputs.home-manager.nixosModules.home-manager
   ];
 
