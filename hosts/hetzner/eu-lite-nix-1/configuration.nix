@@ -25,7 +25,7 @@
     device = "/dev/sda";
   };
 
-  users.users.riad.extraGroups  = [ "wheel" ];
+  users.users.riad.extraGroups  = [ "wheel" "docker" ];
   users.defaultUserShell = pkgs.zsh;
   programs.zsh.enable = true;
 
