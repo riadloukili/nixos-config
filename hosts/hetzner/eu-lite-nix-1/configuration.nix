@@ -9,6 +9,10 @@
   time.timeZone         = "America/Toronto";
   i18n.defaultLocale    = "en_US.UTF-8";
 
+  boot.loader.grub.enable = true;
+  boot.loader.grub.device = "/dev/sda";
+  boot.initrd.availableKernelModules = [ "ahci" "xhci_pci" "virtio_pci" "virtio_scsi" "sd_mod" "sr_mod" "ext4" ];
+
   users.users.riad.extraGroups  = [ "wheel" ];
 
   security.sudo.wheelNeedsPassword = false;
