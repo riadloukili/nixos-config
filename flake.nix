@@ -8,7 +8,7 @@
   outputs = { self, nixpkgs }: {
     nixosConfigurations = {
       # Hetzner
-      "eu-lite-nix-1" = nixpkgs.lib.nixosSystem {
+      "hetzner-eu-lite-nix-1" = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
           ./modules/packages.nix
