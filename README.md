@@ -72,6 +72,8 @@ nixos-config/
 
 ## Adding a new machine
 
+> **Provider-specific guides**: See [Hetzner installation guide](hosts/hetzner/README.md) for detailed Hetzner setup instructions.
+
 1. **Create the directory**
 
    ```bash
