@@ -1,13 +1,22 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 {
   imports = [
     ./hardware-configuration.nix
+    ../../modules/packages.nix
+    ../../modules/users
+    ../../modules/services/openssh.nix
+    ../../modules/services/firewall.nix
+    ../../modules/services/boot.nix
+    ../../profiles/base.nix
+    inputs.home-manager.nixosModules.home-manager
   ];
 
   networking.hostName   = "eu-lite-nix-1";
   time.timeZone         = "America/Toronto";
   i18n.defaultLocale    = "en_US.UTF-8";
+
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   mySystem.boot = {
     loader = "grub";
@@ -32,6 +41,11 @@
   };
 
   mySystem.packages = [];
+
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+  };
 
   system.stateVersion = "25.05";
 }
