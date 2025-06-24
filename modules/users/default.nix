@@ -1,12 +1,11 @@
 { config, lib, pkgs, ... }:
 
 let
-  dir = toString (./);
-  allFiles = builtins.attrNames (builtins.readDir dir);
-  userFiles = lib.filter
-    (f: f != "default.nix" && lib.strings.hasSuffix ".nix" f)
-    allFiles;
+  files = builtins.readDir ./modules/users;
+  userNames = lib.filter
+    (n: n != "default.nix" && lib.strings.hasSuffix ".nix" n)
+    (builtins.attrNames files);
 in
-  lib.foldl' (acc: file:
-    acc // import (dir + "/" + file)
-  ) {} userFiles
+lib.foldl' (acc: name:
+  acc // import files.${name}
+) {} userNames
