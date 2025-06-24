@@ -9,19 +9,27 @@
   time.timeZone         = "America/Toronto";
   i18n.defaultLocale    = "en_US.UTF-8";
 
-  boot.loader.grub.enable = true;
-  boot.loader.grub.device = "/dev/sda";
-  boot.initrd.availableKernelModules = [ "ahci" "xhci_pci" "virtio_pci" "virtio_scsi" "sd_mod" "sr_mod" "ext4" ];
+  mySystem.boot = {
+    loader = "grub";
+    device = "/dev/sda";
+  };
 
   users.users.riad.extraGroups  = [ "wheel" ];
+  users.defaultUserShell = pkgs.zsh;
+  programs.zsh.enable = true;
 
   security.sudo.wheelNeedsPassword = false;
 
-  services.openssh.enable               = true;
-  services.openssh.passwordAuthentication = false;
+  mySystem.openssh = {
+    enable = true;
+    passwordAuthentication = false;
+    ports = [ 22 ];
+  };
 
-  networking.firewall.enable           = true;
-  networking.firewall.allowedTCPPorts  = [ 22 ];
+  mySystem.firewall = {
+    enable = true;
+    allowedTCPPorts = [ 22 ];
+  };
 
   mySystem.packages = [];
 

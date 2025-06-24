@@ -34,12 +34,10 @@ nixos-config/
 ├── flake.nix                 ← top-level flake definition
 ├── README.md
 ├── modules/                  ← reusable module fragments
-│   ├── networking.nix
 │   ├── packages.nix          ← custom package-list option
 │   └── users/                ← per-user SSH & account info
 │       ├── default.nix       ← imports all `<user>.nix`
-│       ├── riad.nix
-│       └── alice.nix
+│       └── riad.nix
 ├── profiles/                 ← high-level package profiles
 │   └── base.nix
 └── hosts/                    ← per-machine configs, grouped by provider
@@ -48,7 +46,8 @@ nixos-config/
     │       ├── hardware-configuration.nix
     │       └── configuration.nix
     ├── aws/
-    └── digitalocean/
+    ├── digitalocean/
+    └── home/
 ```
 
 ## Adding a new machine
@@ -97,6 +96,7 @@ nixos-config/
      modules = [
        ./modules/packages.nix
        ./modules/users
+       ./profiles/base.nix
        ./hosts/<provider>/<machine-id>/configuration.nix
      ];
    };
