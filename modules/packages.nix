@@ -1,18 +1,19 @@
-{ config, lib, pkgs, types, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   options = {
     mySystem = {
       packages = lib.mkOption {
-        type = types.listOf types.package;
+        type = lib.types.listOf lib.types.package;
         default = [];
         description = "Additional system packages to install";
       };
     };
   };
 
-  config = {
-    environment.systemPackages =
-      (config.environment.systemPackages or []) ++ config.mySystem.packages;
-  };
+  config = lib.mkMerge [
+    (lib.mkIf (config.mySystem.packages != []) {
+      environment.systemPackages = config.mySystem.packages;
+    })
+  ];
 }
