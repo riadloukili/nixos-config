@@ -11,6 +11,10 @@ Universal, flake-based NixOS configurations (stable 25.05 “Warbler”) for mul
 
 ## Getting started
 
+You can either clone the repository locally or use it directly from GitHub:
+
+### Option 1: Clone locally (for development)
+
 1. **Clone this repo**
 
    ```bash
@@ -27,7 +31,17 @@ Universal, flake-based NixOS configurations (stable 25.05 “Warbler”) for mul
    sudo nixos-rebuild switch --flake .#<provider-machine-id>
    ```
 
-   Machine IDs are automatically generated as `<provider>-<machine>` (e.g., `hetzner-eu-lite-nix-1`).
+### Option 2: Use directly from GitHub (for deployment)
+
+**Install or rebuild a host directly**
+
+```bash
+sudo nixos-install --flake github:riadloukili/nixos-config#<provider-machine-id>
+# ...or, after first install...
+sudo nixos-rebuild switch --flake github:riadloukili/nixos-config#<provider-machine-id>
+```
+
+Machine IDs are automatically generated as `<provider>-<machine>` (e.g., `hetzner-eu-lite-nix-1`).
 
 ## Repository layout
 
@@ -180,4 +194,4 @@ nixos-config/
 * `sudo nixos-rebuild switch --flake .#<provider-machine-id>` — apply changes live
 * `sudo nixos-rebuild test --flake .#<provider-machine-id>` — test without switching
 * `sudo nixos-rebuild build --flake .#<provider-machine-id>` — build without applying
-* `rebuild` — convenient alias that auto-detects provider and hostname
+* `rebuild` — convenient alias that auto-detects provider and hostname (uses GitHub repo)

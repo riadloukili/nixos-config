@@ -25,7 +25,7 @@
           la = "ls -la";
           ".." = "cd ..";
           grep = "grep --color=auto";
-          rebuild = "sudo nixos-rebuild switch --flake .#$CLOUD_PROVIDER-$(hostname)";
+          rebuild = "sudo nixos-rebuild switch --flake github:riadloukili/nixos-config#$CLOUD_PROVIDER-$(hostname)";
         };
         oh-my-zsh = {
           enable = true;
