@@ -29,9 +29,16 @@
         };
         oh-my-zsh = {
           enable = true;
-          theme = "robbyrussell";
+          theme = "powerlevel10k/powerlevel10k";
           plugins = [ "git" "sudo" "history" ];
         };
+        plugins = [
+          {
+            name = "powerlevel10k";
+            src = pkgs.zsh-powerlevel10k;
+            file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
+          }
+        ];
       };
       
       git = {
