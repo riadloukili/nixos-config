@@ -8,6 +8,7 @@
     ../../../modules/services/openssh.nix
     ../../../modules/services/firewall.nix
     ../../../modules/services/boot.nix
+    ../../../modules/services/networking.nix
     ../../../profiles/server.nix
     inputs.home-manager.nixosModules.home-manager
   ];
@@ -43,6 +44,8 @@
   };
 
   mySystem.packages = [];
+
+  mySystem.networking.enable = true;
 
   home-manager = {
     useGlobalPkgs = true;
