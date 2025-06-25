@@ -197,3 +197,4 @@ nixos-config/
 * `sudo nixos-rebuild test --flake .#<provider-machine-id>` — test without switching
 * `sudo nixos-rebuild build --flake .#<provider-machine-id>` — build without applying
 * `rebuild` — convenient alias that auto-detects provider and hostname (uses GitHub repo)
+* `rebuild --refresh` — force refetch latest changes from GitHub repository
