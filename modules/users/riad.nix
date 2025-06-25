@@ -29,7 +29,7 @@
         };
         oh-my-zsh = {
           enable = true;
-          theme = "powerlevel10k/powerlevel10k";
+          theme = "";  # Disable oh-my-zsh theme since we use powerlevel10k plugin
           plugins = [ "git" "sudo" "history" ];
         };
         plugins = [
