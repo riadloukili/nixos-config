@@ -20,12 +20,14 @@
   };
 
   config = lib.mkIf config.mySystem.docker.enable {
-    virtualisation.docker = {
-      enable = true;
-      rootless = lib.mkIf config.mySystem.docker.rootless {
+    virtualisation.docker = if config.mySystem.docker.rootless then {
+      enable = false;  # Disable system-wide daemon for rootless
+      rootless = {
         enable = true;
         setSocketVariable = true;
       };
+    } else {
+      enable = true;
     };
 
     environment.systemPackages = lib.optionals config.mySystem.docker.composePackage [
