@@ -4,6 +4,7 @@
   imports = [
     ./base.nix
     ../modules/services/docker.nix
+    ../modules/services/auto-update.nix
   ];
 
   mySystem.docker = {
