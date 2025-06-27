@@ -64,7 +64,6 @@ function prompt_cloud_provider_icon() {
   # The list of segments shown on the left. Fill it with the most important segments.
   typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(
     # =========================[ Line #1 ]=========================
-    cloud_provider_icon
     os_icon                 # os identifier
     dir                     # current directory
     vcs                     # git status
@@ -118,6 +117,7 @@ function prompt_cloud_provider_icon() {
     gcloud                  # google cloud cli account and project (https://cloud.google.com/)
     google_app_cred         # google application credentials (https://cloud.google.com/docs/authentication/production)
     toolbox                 # toolbox name (https://github.com/containers/toolbox)
+    cloud_provider_icon
     context                 # user@hostname
     nordvpn                 # nordvpn connection status, linux only (https://nordvpn.com/)
     ranger                  # ranger shell (https://github.com/ranger/ranger)
@@ -229,11 +229,7 @@ function prompt_cloud_provider_icon() {
   # OS identifier color.
   typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND=255
   # Custom icon.
-  # typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION='$(get_cloud_icon_colored)${P9K_OS_ICON}'
-
-  typeset -g POWERLEVEL9K_CLOUD_PROVIDER_ICON_RIGHT_WHITESPACE=0
-  typeset -g POWERLEVEL9K_OS_ICON_LEFT_SEPARATOR=''
-  typeset -g POWERLEVEL9K_OS_ICON_LEFT_WHITESPACE=0
+  # typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION='${P9K_OS_ICON}'
 
   ################################[ prompt_char: prompt symbol ]################################
   # Transparent background.
