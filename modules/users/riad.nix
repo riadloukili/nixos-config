@@ -87,5 +87,6 @@
     ];
 
     home.file.".p10k.zsh".source = ../../dotfiles/riad/p10k.zsh;
+    home.file.".tmux.conf".source = ../../dotfiles/riad/tmux.conf;
   };
 }

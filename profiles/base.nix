@@ -5,5 +5,6 @@
     pkgs.git
     pkgs.vim
     pkgs.htop
+    pkgs.tmux
   ];
 }
