@@ -95,7 +95,7 @@
         owner = "tmux-plugins";
         repo = "tpm";
         rev = "v3.1.0";
-        sha256 = "sha256-CeI9Wq6tHqV68woE11lIY4cLotwFQZjJ0g5uOAIs+0Q=";
+        sha256 = "sha256-CeI9Wq6tHqV68woE11lIY4cLoNY8XWyXyMHTDmFKJKI=";
       };
       recursive = true;
     };
