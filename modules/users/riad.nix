@@ -91,12 +91,16 @@
     
     # Install TPM (Tmux Plugin Manager) declaratively
     home.file.".tmux/plugins/tpm" = {
-      source = pkgs.fetchFromGitHub {
-        owner = "tmux-plugins";
-        repo = "tpm";
-        rev = "v3.1.0";
-        sha256 = "sha256-CeI9Wq6tHqV68woE11lIY4cLoNY8XWyXyMHTDmFKJKI=";
-      };
+      source = pkgs.runCommand "tpm-with-executable" {} ''
+        cp -r ${pkgs.fetchFromGitHub {
+          owner = "tmux-plugins";
+          repo = "tpm";
+          rev = "v3.1.0";
+          sha256 = "sha256-CeI9Wq6tHqV68woE11lIY4cLoNY8XWyXyMHTDmFKJKI=";
+        }} $out
+        chmod +x $out/tpm
+        chmod +x $out/bin/*
+      '';
       recursive = true;
     };
   };
