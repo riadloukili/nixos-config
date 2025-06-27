@@ -65,7 +65,6 @@ function get_cloud_icon_colored() {
   typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(
     # =========================[ Line #1 ]=========================
     os_icon                 # os identifier
-    cloud_provider_icon     # cloud provider icon from hosts/<provider>/<machine id>
     dir                     # current directory
     vcs                     # git status
     # =========================[ Line #2 ]=========================
