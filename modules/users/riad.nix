@@ -91,15 +91,22 @@
     
     # Install TPM (Tmux Plugin Manager) declaratively
     home.file.".tmux/plugins/tpm" = {
-      source = pkgs.runCommand "tpm-with-executable" {} ''
+      source = pkgs.runCommand "tpm-fixed" {} ''
+        mkdir -p $out
         cp -r ${pkgs.fetchFromGitHub {
           owner = "tmux-plugins";
           repo = "tpm";
           rev = "v3.1.0";
           sha256 = "sha256-CeI9Wq6tHqV68woE11lIY4cLoNY8XWyXyMHTDmFKJKI=";
-        }} $out
+        }}/* $out/
+        
+        # Make all scripts executable
         chmod +x $out/tpm
         chmod +x $out/bin/*
+        chmod +x $out/bindings/*
+        
+        # Ensure proper shebang handling
+        find $out -type f -name "*.sh" -exec chmod +x {} \;
       '';
       recursive = true;
     };
