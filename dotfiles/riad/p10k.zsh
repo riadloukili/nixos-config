@@ -228,7 +228,7 @@ function get_cloud_icon_colored() {
   # OS identifier color.
   typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND=255
   # Custom icon.
-  typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION='$(get_cloud_icon_colored)(${P9K_OS_ICON})'
+  typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION='$(get_cloud_icon_colored)${P9K_OS_ICON}'
 
   ################################[ prompt_char: prompt symbol ]################################
   # Transparent background.
