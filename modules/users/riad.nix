@@ -88,5 +88,16 @@
 
     home.file.".p10k.zsh".source = ../../dotfiles/riad/p10k.zsh;
     home.file.".tmux.conf".source = ../../dotfiles/riad/tmux.conf;
+    
+    # Install TPM (Tmux Plugin Manager) declaratively
+    home.file.".tmux/plugins/tpm" = {
+      source = pkgs.fetchFromGitHub {
+        owner = "tmux-plugins";
+        repo = "tpm";
+        rev = "v3.1.0";
+        sha256 = "sha256-CeI9Wq6tHqV68woE11lIY4cLotwFQZjJ0g5uOAIs+0Q=";
+      };
+      recursive = true;
+    };
   };
 }
