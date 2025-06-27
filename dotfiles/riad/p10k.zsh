@@ -11,7 +11,7 @@ function prompt_cloud_provider_icon() {
       ;;
     "hetzner")
       icon=""
-      color="124"
+      color="1"
       ;;
     "digitalocean")
       icon=""
