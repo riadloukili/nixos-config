@@ -231,9 +231,9 @@ function prompt_cloud_provider_icon() {
   # Custom icon.
   # typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION='$(get_cloud_icon_colored)${P9K_OS_ICON}'
 
-  typeset -g POWERLEVEL9K_CLOUD_PROVIDER_ICON_RIGHT_SEPARATOR=''
-  typeset -g POWERLEVEL9K_OS_ICON_LEFT_WHITESPACE=0
+  typeset -g POWERLEVEL9K_CLOUD_PROVIDER_ICON_RIGHT_WHITESPACE=0
   typeset -g POWERLEVEL9K_OS_ICON_LEFT_SEPARATOR=''
+  typeset -g POWERLEVEL9K_OS_ICON_LEFT_WHITESPACE=0
 
   ################################[ prompt_char: prompt symbol ]################################
   # Transparent background.
