@@ -33,7 +33,7 @@
     # Enable automatic updates
     system.autoUpgrade = {
       enable = true;
-      flake = "${config.mySystem.autoUpdate.flakeUri}#${config.networking.hostName}";
+      flake = "${config.mySystem.autoUpdate.flakeUri}#${config.environment.variables.CLOUD_PROVIDER}-${config.networking.hostName}";
       flags = [
         "--refresh"
         "--no-write-lock-file"
