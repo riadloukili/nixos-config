@@ -6,20 +6,20 @@ function prompt_cloud_provider_icon() {
   
   case "${CLOUD_PROVIDER}" in
     "aws")
-      icon="☁️"  # or use 
-      color="208"  # Orange
+      icon=""
+      color="208"
       ;;
     "hetzner")
-      icon="🔥"  # or use 
-      color="196"  # Red
+      icon=""
+      color="196"
       ;;
     "digitalocean")
-      icon="🌊"  # or use 
-      color="39"   # Blue
+      icon=""
+      color="39"
       ;;
     "home")
-      icon="🏠"  # or use 
-      color="28"   # Green
+      icon=""
+      color="28"
       ;;
     *)
       # Don't show segment if CLOUD_PROVIDER is not set or unknown
