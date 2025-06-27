@@ -1,6 +1,6 @@
 # Custom Powerlevel10k configuration.
 
-function prompt_cloud_provider() {
+function prompt_cloud_provider_icon() {
   local icon
   local color
   
