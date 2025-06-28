@@ -1,5 +1,7 @@
 # NixOS Config
 
+[![Update Nix Flake](https://github.com/riadloukili/nixos-config/actions/workflows/update-flake.yml/badge.svg)](https://github.com/riadloukili/nixos-config/actions/workflows/update-flake.yml)
+
 Universal, flake-based NixOS configurations (stable 25.05 "Warbler") for multiple machines and cloud providers.
 
 **Production-ready features**: Auto-updates, smart garbage collection, Docker integration, advanced dotfiles, security hardening, and comprehensive automation.
