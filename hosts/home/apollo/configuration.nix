@@ -46,7 +46,9 @@
     allowedTCPPorts = [ 22 ];
   };
 
-  mySystem.packages = [];
+  mySystem.packages = [
+    pkgs.kitty.terminfo
+  ];
 
   mySystem.networking.enable = true;
 
