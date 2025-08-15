@@ -14,12 +14,6 @@
         default = "/dev/sda";
         description = "Boot device for GRUB (ignored for systemd-boot)";
       };
-      
-      kernelModules = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [];
-        description = "Additional kernel modules to load";
-      };
     };
   };
 
@@ -34,10 +28,6 @@
         systemd-boot.enable = true;
         efi.canTouchEfiVariables = true;
       };
-      
-      initrd.availableKernelModules = [
-        "ahci" "xhci_pci" "virtio_pci" "virtio_scsi" "sd_mod" "sr_mod" "ext4"
-      ] ++ config.mySystem.boot.kernelModules;
     };
   };
 }
