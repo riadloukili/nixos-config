@@ -40,15 +40,13 @@
       pkgs.docker-compose
     ];
 
-    systemd.services.docker-rootless-setcap = lib.mkIf (config.mySystem.docker.rootless && config.mySystem.docker.enablePrivilegedPorts) {
-      description = "Set CAP_NET_BIND_SERVICE on rootlesskit for Docker rootless";
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        ExecStart = "${pkgs.libcap}/bin/setcap cap_net_bind_service=ep ${pkgs.rootlesskit}/bin/rootlesskit";
+    security.wrappers = lib.mkIf (config.mySystem.docker.rootless && config.mySystem.docker.enablePrivilegedPorts) {
+      docker-rootlesskit = {
+        owner = "root";
+        group = "root";
+        capabilities = "cap_net_bind_service+ep";
+        source = "${pkgs.rootlesskit}/bin/rootlesskit";
       };
-      before = [ "docker.service" ];
     };
   };
 }
