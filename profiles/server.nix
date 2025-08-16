@@ -11,5 +11,6 @@
     enable = true;
     rootless = true;
     composePackage = true;
+    enablePrivilegedPorts = true;
   };
 }
