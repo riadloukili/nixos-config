@@ -71,9 +71,9 @@
       ];
     };
 
-    environment.systemPackages = lib.optionals config.mySystem.docker.composePackage [
-      pkgs.docker-compose
-    ];
+    environment.systemPackages = with pkgs; 
+      lib.optionals config.mySystem.docker.composePackage [ docker-compose ] ++
+      lib.optionals config.mySystem.docker.rootless [ slirp4netns ];
 
     security.wrappers = lib.mkIf (config.mySystem.docker.rootless && config.mySystem.docker.enablePrivilegedPorts) {
       docker-rootlesskit = {
@@ -93,10 +93,6 @@
     boot.kernel.sysctl = {
       "net.ipv4.ip_forward" = 1;
     };
-
-    environment.systemPackages = lib.mkIf config.mySystem.docker.rootless (
-      config.environment.systemPackages ++ [ pkgs.slirp4netns ]
-    );
 
     systemd.user.services = lib.mkIf (config.mySystem.docker.rootless && config.mySystem.docker.customDns) {
       docker-rootless-dns-config = {
