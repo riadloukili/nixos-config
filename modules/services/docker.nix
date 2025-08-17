@@ -44,19 +44,31 @@
       rootless = {
         enable = true;
         setSocketVariable = true;
-        daemon.settings = lib.mkIf config.mySystem.docker.customDns {
-          dns = config.mySystem.docker.dns;
-          "dns-opts" = [ "ndots:0" ];
-          "dns-search" = [];
-        };
+        daemon.settings = lib.mkMerge [
+          (lib.mkIf config.mySystem.docker.customDns {
+            dns = config.mySystem.docker.dns;
+            "dns-opts" = [ "ndots:0" ];
+            "dns-search" = [];
+          })
+          {
+            "iptables" = true;
+            "ip-forward" = true;
+          }
+        ];
       };
     } else {
       enable = true;
-      daemon.settings = lib.mkIf config.mySystem.docker.customDns {
-        dns = config.mySystem.docker.dns;
-        "dns-opts" = [ "ndots:0" ];
-        "dns-search" = [];
-      };
+      daemon.settings = lib.mkMerge [
+        (lib.mkIf config.mySystem.docker.customDns {
+          dns = config.mySystem.docker.dns;
+          "dns-opts" = [ "ndots:0" ];
+          "dns-search" = [];
+        })
+        {
+          "iptables" = true;
+          "ip-forward" = true;
+        }
+      ];
     };
 
     environment.systemPackages = lib.optionals config.mySystem.docker.composePackage [
@@ -71,9 +83,43 @@
         source = "${pkgs.rootlesskit}/bin/rootlesskit";
       };
     };
-    networking.firewall = lib.mkIf config.mySystem.docker.customDns {
-      trustedInterfaces = [ "docker0" ];
-      allowedUDPPorts = [ 53 ];
+
+    networking.firewall = {
+      trustedInterfaces = [ "docker0" ] ++ lib.optional config.mySystem.docker.enable "br-*";
+      checkReversePath = false;
+      allowedUDPPorts = lib.optional config.mySystem.docker.customDns 53;
+    };
+
+    boot.kernel.sysctl = {
+      "net.ipv4.ip_forward" = 1;
+    };
+
+    environment.systemPackages = lib.mkIf config.mySystem.docker.rootless (
+      config.environment.systemPackages ++ [ pkgs.slirp4netns ]
+    );
+
+    systemd.user.services = lib.mkIf (config.mySystem.docker.rootless && config.mySystem.docker.customDns) {
+      docker-rootless-dns-config = {
+        description = "Setup Docker rootless DNS configuration";
+        wantedBy = [ "default.target" ];
+        before = [ "docker.service" ];
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+          ExecStart = pkgs.writeShellScript "setup-docker-dns" ''
+            mkdir -p ~/.config/docker
+            cat > ~/.config/docker/daemon.json <<EOF
+            {
+              "dns": ${builtins.toJSON config.mySystem.docker.dns},
+              "dns-opts": ["ndots:0"],
+              "dns-search": [],
+              "iptables": true,
+              "ip-forward": true
+            }
+            EOF
+          '';
+        };
+      };
     };
   };
 }
