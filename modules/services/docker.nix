@@ -71,5 +71,9 @@
         source = "${pkgs.rootlesskit}/bin/rootlesskit";
       };
     };
+    networking.firewall = lib.mkIf config.mySystem.docker.customDns {
+      trustedInterfaces = [ "docker0" ];
+      allowedUDPPorts = [ 53 ];
+    };
   };
 }
