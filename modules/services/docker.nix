@@ -22,6 +22,19 @@
         default = false;
         description = "Allow rootless Docker to bind to privileged ports (< 1024)";
       };
+
+      dns = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ "1.1.1.1" "1.0.0.1" ];
+        description = "DNS servers for Docker containers";
+        example = [ "8.8.8.8" "8.8.4.4" ];
+      };
+
+      customDns = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Enable custom DNS configuration for Docker";
+      };
     };
   };
 
@@ -31,9 +44,19 @@
       rootless = {
         enable = true;
         setSocketVariable = true;
+        daemon.settings = lib.mkIf config.mySystem.docker.customDns {
+          dns = config.mySystem.docker.dns;
+          "dns-opts" = [ "ndots:0" ];
+          "dns-search" = [];
+        };
       };
     } else {
       enable = true;
+      daemon.settings = lib.mkIf config.mySystem.docker.customDns {
+        dns = config.mySystem.docker.dns;
+        "dns-opts" = [ "ndots:0" ];
+        "dns-search" = [];
+      };
     };
 
     environment.systemPackages = lib.optionals config.mySystem.docker.composePackage [
