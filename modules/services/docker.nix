@@ -116,15 +116,6 @@
           '';
         };
       };
-      docker-rootless-keepalive = {
-        description = "Keep Docker rootless daemon alive";
-        wantedBy = [ "default.target" ];
-        serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-          ExecStart = "${pkgs.coreutils}/bin/true";
-        };
-      };
     };
   };
 }
