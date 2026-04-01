@@ -39,13 +39,18 @@ in
     };
   };
 
-  config = lib.mkIf config.mySystem.firewall.enable {
-    networking.firewall = {
-      enable = true;
-      allowedTCPPorts = config.mySystem.firewall.allowedTCPPorts;
-      allowedUDPPorts = config.mySystem.firewall.allowedUDPPorts;
-      allowedTCPPortRanges = config.mySystem.firewall.allowedTCPPortRanges;
-      allowedUDPPortRanges = config.mySystem.firewall.allowedUDPPortRanges;
-    };
-  };
+  config = lib.mkMerge [
+    (lib.mkIf config.mySystem.firewall.enable {
+      networking.firewall = {
+        enable = true;
+        allowedTCPPorts = config.mySystem.firewall.allowedTCPPorts;
+        allowedUDPPorts = config.mySystem.firewall.allowedUDPPorts;
+        allowedTCPPortRanges = config.mySystem.firewall.allowedTCPPortRanges;
+        allowedUDPPortRanges = config.mySystem.firewall.allowedUDPPortRanges;
+      };
+    })
+    (lib.mkIf (!config.mySystem.firewall.enable) {
+      networking.firewall.enable = false;
+    })
+  ];
 }
