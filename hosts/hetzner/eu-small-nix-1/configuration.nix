@@ -41,6 +41,7 @@
   mySystem.firewall = {
     enable = true;
     allowedTCPPorts = [ 22 80 443 1935 ];
+    allowedUDPPortRanges = [ { from = 20000; to = 20100; } ];
   };
 
   mySystem.packages = [
