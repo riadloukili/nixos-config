@@ -40,7 +40,7 @@
 
   mySystem.firewall = {
     enable = true;
-    allowedTCPPorts = [ 22 80 443 ];
+    allowedTCPPorts = [ 22 80 443 1935 ];
   };
 
   mySystem.packages = [
