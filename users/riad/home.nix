@@ -3,12 +3,14 @@
 # src/modules/dotfiles.nix; anything missing there uses the program's defaults.
 {
   config,
+  lib,
   osConfig,
   pkgs,
   ...
 }:
 let
   dotfiles = config.my.dotfiles.path;
+  desktop = osConfig.programs.hyprland.enable;
 in
 {
   home = {
@@ -16,40 +18,42 @@ in
     homeDirectory = "/home/riad";
     stateVersion = osConfig.system.stateVersion;
 
-    packages = with pkgs; [
-      # cli
-      curl
-      wget
-      tree
-      unzip
-      ripgrep
-      fd
-      bat
-      eza
-      jq
-      yq-go
-      dust
-      duf
-      fastfetch
-      btop
-      # editors / multiplexer (config from dotfiles)
-      neovim
-      tmux
-      # dev
-      gh
-      glab
-      just
-      nodejs
-      python3
-      uv
-      go
-      rustup
-      lazygit
-      lazydocker
-      docker-compose
-      nixd
-      nixfmt
-    ];
+    packages =
+      with pkgs;
+      [
+        # cli
+        wget
+        tree
+        unzip
+        ripgrep
+        fd
+        bat
+        eza
+        jq
+        yq-go
+        dust
+        duf
+        fastfetch
+        btop
+        # editors / multiplexer (config from dotfiles)
+        neovim
+        tmux
+        lazygit
+        lazydocker
+        nixd
+        nixfmt
+      ]
+      ++ lib.optionals desktop [
+        # dev toolchains: workstations only
+        gh
+        glab
+        just
+        nodejs
+        python3
+        uv
+        go
+        rustup
+      ];
 
     sessionVariables = {
       EDITOR = "nvim";
@@ -127,18 +131,17 @@ in
       enable = true;
       flags = [ "--disable-up-arrow" ];
     };
-    kitty.enable = true;
   };
 
-  # Desktop theming (only matters on desktop hosts).
-  home.pointerCursor = {
+  # Desktop theming.
+  home.pointerCursor = lib.mkIf desktop {
     enable = true;
     gtk.enable = true;
     package = pkgs.bibata-cursors;
     name = "Bibata-Modern-Classic";
     size = 24;
   };
-  gtk = {
+  gtk = lib.mkIf desktop {
     enable = true;
     theme = {
       package = pkgs.adw-gtk3;
@@ -149,13 +152,13 @@ in
       name = "Papirus-Dark";
     };
   };
-  qt = {
+  qt = lib.mkIf desktop {
     enable = true;
     platformTheme.name = "gtk3";
   };
   xdg = {
     enable = true;
-    userDirs.enable = true;
-    mimeApps.enable = true;
+    userDirs.enable = desktop;
+    mimeApps.enable = desktop;
   };
 }
