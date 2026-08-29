@@ -13,6 +13,7 @@
       desktop.fonts
       desktop.keyboard
       desktop.network
+      desktop.envfs
     ];
   };
 }
