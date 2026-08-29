@@ -14,16 +14,17 @@ nix build .#iso-<host>|iso-server|iso-desktop
 
 **Flakes only see git-tracked files: `git add` new files before evaluating.**
 
-## Structure
+## Structure (dendritic)
 
-- `flake.nix` = inputs; `flake/*.nix` are flake-parts modules auto-imported by import-tree (hosts discovery, ISOs, wrappers, devshell, treefmt, git-hooks, checks). Everything outside `flake/` is a plain NixOS / home-manager module imported by path — no aspect registry, no inventory DSL.
-- `hosts/<provider>/<name>/`: `default.nix` (imports profiles + users, sets options), `hardware.nix`, `disko.nix`. `flake/hosts.nix` adds the latter two automatically (so `flake/iso.nix` can reuse `default.nix` for the live image) and sets `networking.hostName` / `$CLOUD_PROVIDER` from the directory names. Adding a host = adding a directory.
-- `profiles/`: `base` → `server` | `desktop` → `laptop`. They import `modules/*` and add `home/*` via `home-manager.sharedModules`. Importing a module from several places is fine (path-deduplicated).
-- `users/<name>.nix` = system user + `home-manager.users.<name> = ./<name>/home.nix`.
-- `modules/`: one thing per file; `my.<x>` options only when parametrised (`my.firewall`, `my.docker`, `my.autoUpdate`, `my.gc`, `my.secrets`, `my.repo`, `my.installer`). `modules/secrets.nix` declares all sops secrets and is inert until `secrets/common.yaml` exists.
-- `home/dotfiles.nix`: layered configs. A module that installs a program declares `my.dotfiles.entries.<name>.default = ./defaults/<name>`; activation links `~/.config/<name>` to `<my.dotfiles.path>/<name>` if the checkout has it, else to the default. Never require the checkout.
-- `wrappers/<name>.nix` = nix-wrapper-modules module, auto-registered by `flake/wrappers.nix` as `flake.wrappers.<name>` and `packages.<system>.<name>`; `wrappers/dotfiles.nix` is a shared constant, not a wrapper. The zsh wrapper is the login shell (`modules/shell.nix`); never overlay the git wrapper as `pkgs.git`.
-- `disko/<layout>.nix` = `{ device, swapSize } -> nixosModule`; every layout names its disk `main`.
+- `flake.nix` = inputs; `import-tree` loads every `.nix` under `flake/ modules/ profiles/ users/ home/ hosts/ installer/` as a flake-parts module. `flake/` builds outputs; the other directories only *register aspects*: `flake.modules.nixos.<name>` / `flake.modules.homeManager.<name>`.
+- `flake/mods.nix` exposes the registry as the `mods` module argument (`{ mods, ... }:` at the top of a file) and wraps each aspect with a `key`, so importing an aspect from several profiles deduplicates. Use `mods`, never `config.flake.modules` inside an aspect (the inner NixOS `config` shadows it).
+- Naming = path: `modules/desktop/hyprland.nix` → `desktop-hyprland`, `modules/boot/grub.nix` → `boot-grub`, `home/cli.nix` → `homeManager.cli`, `profiles/x.nix` → `profile-x`, `users/x.nix` → `user-x` (+ `homeManager.user-x` from `users/x/home.nix`), `installer/x.nix` → `installer-x`, `hosts/<p>/<n>/{default,hardware,disko}.nix` → `host-<n>`, `host-<n>-hardware`, `host-<n>-disk`.
+- `flake/hosts.nix` discovers `hosts/<provider>/<name>/` and builds `nixosConfigurations.<name>` from the three host aspects (+ home-manager, disko, sops modules; hostname and `$CLOUD_PROVIDER` from the directory names). `flake/iso.nix` reuses `host-<name>` (without hardware/disk) for `iso-<name>`. Adding a host = adding a directory.
+- Profiles: `profile-base` → `profile-server` | `profile-desktop` → `profile-laptop`; they import aspects and add home-manager aspects via `home-manager.sharedModules`. One file can hold both halves of a feature (`modules/desktop/hyprland.nix`).
+- `my.<x>` options only when parametrised (`my.firewall`, `my.docker`, `my.autoUpdate`, `my.gc`, `my.secrets`, `my.repo`, `my.installer`, HM `my.dotfiles`). `modules/secrets.nix` declares all sops secrets and is inert until `secrets/common.yaml` exists.
+- `home/dotfiles.nix`: layered configs — an aspect that installs a program sets `my.dotfiles.entries.<name>.default = ./defaults/<name>`; activation links `~/.config/<name>` to `<my.dotfiles.path>/<name>` if the checkout has it, else to the default. Never require the checkout.
+- `wrappers/<name>.nix` are nix-wrapper-modules modules (not flake-parts); `flake/wrappers.nix` registers them as `flake.wrappers.<name>` and `packages.<system>.<name>`. `wrappers/dotfiles.nix` is a shared constant. The zsh wrapper is the login shell (`modules/shell.nix`); never overlay the git wrapper as `pkgs.git`.
+- `disko/<layout>.nix` = `{ device, swapSize } -> nixosModule`, disk always named `main`.
 - Servers pull `main` daily (`modules/auto-update.nix`): pushing to `main` deploys. Work on branches; CI must be green.
 
 ## Conventions
