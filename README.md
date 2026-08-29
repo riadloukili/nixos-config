@@ -46,9 +46,8 @@ Every `.nix` file is a flake-parts module that *registers* an aspect under a nam
 
 - Names mirror paths: `src/modules/desktop/hyprland.nix` → `mods.nixos.desktop.hyprland`; `src/modules/docker.nix` → `mods.nixos.docker`; `profiles/server.nix` → `mods.nixos.profiles.server`; `users/riad/default.nix` → `mods.nixos.users.riad`; `src/disko/server-btrfs.nix` → `mods.nixos.disko.server-btrfs`; `src/modules/dotfiles.nix` → `mods.homeManager.dotfiles`; a host registers `hosts/<name>/{default,hardware,disk}`. Files starting with `_` are helpers, not modules.
 - `src/outputs/hosts.nix` finds every `hosts/<provider>/<name>/`, sets `networking.hostName = <name>` and `$CLOUD_PROVIDER = <provider>`, and builds `nixosConfigurations.<name>` from the three host aspects.
-- A file may carry both halves of a feature (see `src/modules/desktop/hyprland.nix`: NixOS part + home-manager part).
 - Profiles own the software a class of machine needs (`desktop.tools` installs waybar/rofi/kitty/… system-wide). A user's folder owns everything about that user: `users/<name>/default.nix` is the system user and points `home-manager.users.<name>` at `./home.nix`, which is theirs to organise.
-- Options live under `my.*` only where an aspect needs parameters (`my.firewall`, `my.docker`, `my.autoUpdate`, `my.gc`, `my.secrets`, `my.repo`, `my.dotfiles`). Everything else is on/off by import.
+- Options live under `my.*` only where an aspect needs parameters (`my.docker`, `my.autoUpdate`, `my.secrets`, `my.repo`, `my.disk`, `my.dotfiles`). Everything else is on/off by import.
 - `stateVersion` is set per host and never changes. Flakes only see git-tracked files: `git add` new files before evaluating.
 
 ## Daily use
@@ -79,13 +78,13 @@ Servers (`profiles/server.nix`) pull `main` daily (`my.autoUpdate`), so **pushin
    sudo nixos-enter --root /mnt -c 'passwd riad'   # no password until secrets are enrolled
    ```
 
-1. Reboot, then from a machine with the admin age key: `just sops-add-host <name> <ip>`, add `*<name>` to the relevant `creation_rules` in `.sops.yaml`, `just secrets-edit common` (needs `riad-password` from `just mkpasswd`, and `tailscale-auth-key` for servers), `just push <name>`.
+1. Reboot, then from a machine with the admin age key: `just sops-add-host <name> <ip>`, add `*<name>` to the relevant `creation_rules` in `.sops.yaml`, `just secrets-edit common` (needs `riad-password` from `mkpasswd -m yescrypt`, and `tailscale-auth-key` for servers), `just push <name>`.
 
 Live images log in as `riad` / `nixos`; SSH keys work everywhere.
 
 ## Secrets
 
-sops-nix with age. Recipients: the admin key (`~/.config/sops/age/keys.txt`) plus each host's SSH host key via `ssh-to-age`. `secrets/common.yaml` is readable by every host, `secrets/<host>.yaml` by one host, `secrets/user.yaml` by the user's home-manager. `src/modules/secrets.nix` only activates once `secrets/common.yaml` exists, so a fresh host builds before enrolment; add secrets there.
+sops-nix with age. Recipients: the admin key (`~/.config/sops/age/keys.txt`) plus each host's SSH host key via `ssh-to-age`. `secrets/common.yaml` is readable by every host, `secrets/<host>.yaml` by one host. `src/modules/secrets.nix` owns the mechanism and is inert until `secrets/common.yaml` exists, so a fresh host builds before enrolment; each consumer declares its own secret under `lib.mkIf config.my.secrets.enable` (see `users/riad/default.nix`, `src/modules/tailscale.nix`).
 
 ## Dotfiles
 
