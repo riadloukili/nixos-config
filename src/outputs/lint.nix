@@ -34,6 +34,12 @@
       settings.excludes = [
         "*.lock"
         "secrets/*.yaml"
+        "*.png"
+        # local-only files (see .git/info/exclude) and installed agent skills
+        "keys.txt"
+        "riad_ed25519*"
+        ".agents/*"
+        "skills-lock.json"
       ];
     };
 
@@ -49,7 +55,10 @@
             MD033 = false;
           };
         };
-        check-added-large-files.enable = true;
+        check-added-large-files = {
+          enable = true;
+          args = [ "--maxkb=4096" ]; # the SDDM background image
+        };
         check-merge-conflicts.enable = true;
       };
       excludes = [ "secrets/.*\\.yaml" ];

@@ -1,5 +1,5 @@
 [files]
-extend-exclude = ["secrets/*.yaml", "flake.lock"]
+extend-exclude = ["secrets/**", "flake.lock", "**/*.png"]
 
 [default.extend-words]
 # Horizon Forbidden West subfunction names and Nix vocabulary
