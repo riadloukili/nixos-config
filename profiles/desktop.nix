@@ -6,7 +6,7 @@
     imports = with mods.nixos; [
       profiles.base
       docker
-      desktop.greetd
+      desktop.sddm
       desktop.hyprland
       desktop.tools
       desktop.audio
