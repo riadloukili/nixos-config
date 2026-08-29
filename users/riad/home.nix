@@ -70,6 +70,26 @@ in
     };
   };
 
+  # My SSH keypair comes from secrets/users/riad.yaml (decrypted by the host to
+  # /run/secrets/riad-ssh-key); install it, then derive my sops age identity from it.
+  home.activation.identity = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if [ -r /run/secrets/riad-ssh-key ]; then
+      run mkdir -p -m 700 "$HOME/.ssh"
+      run install -m 600 /run/secrets/riad-ssh-key "$HOME/.ssh/id_ed25519"
+      run ${pkgs.openssh}/bin/ssh-keygen -y -f "$HOME/.ssh/id_ed25519" > "$HOME/.ssh/id_ed25519.pub"
+    fi
+    if [ -f "$HOME/.ssh/id_ed25519" ] && [ ! -f "$HOME/.config/sops/age/keys.txt" ]; then
+      if ! ${pkgs.openssh}/bin/ssh-keygen -y -P "" -f "$HOME/.ssh/id_ed25519" >/dev/null 2>&1; then
+        echo "sops: SSH key has a passphrase; derive the age identity once by hand:" >&2
+        echo "  SSH_TO_AGE_PASSPHRASE=... ssh-to-age -private-key -i ~/.ssh/id_ed25519 -o ~/.config/sops/age/keys.txt" >&2
+      else
+        run mkdir -p -m 700 "$HOME/.config/sops/age"
+        run ${pkgs.ssh-to-age}/bin/ssh-to-age -private-key -i "$HOME/.ssh/id_ed25519" -o "$HOME/.config/sops/age/keys.txt"
+        run chmod 600 "$HOME/.config/sops/age/keys.txt"
+      fi
+    fi
+  '';
+
   programs = {
     home-manager.enable = true;
 

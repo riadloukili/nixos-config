@@ -1,5 +1,10 @@
 # riad: the system user. Everything else about me is in ./home.nix
 # (home-manager) and the dotfiles repo (github:riadloukili/dotfiles).
+#
+# My identity lives in secrets/users/riad.yaml: `password` (mkpasswd hash) and
+# `ssh-private-key`, my single SSH keypair. A host listed on that file gets
+# both at boot; home.nix installs the key as ~/.ssh/id_ed25519 and derives my
+# sops age identity from it.
 { mods, ... }:
 {
   flake.modules.nixos."users/riad" =
@@ -21,17 +26,22 @@
         ];
         linger = true; # keeps user services (rootless docker) alive without a session
         openssh.authorizedKeys.keys = [
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA155OrLNRsrX8you/OUX5l/gSrGl0HrfZ4NozYvngO/ riad@eleuthia"
-          "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDVAlLxIukRuOf8cR+IqnghXKScM6zkwXL5DoaHc6n5cOabI08RpbfbbIlc0Sz6EVUiB0pEbMtSdvgejjlR8Gr4ve49jj6t7E/4p9seTI9Cv8nsz69Eh10uP/m7I8BLWlXmQlHqSmVvrJz5H+gv7w0jlC4zETrYx3M2ayXFUAbjDEGnnSOoXGGroUVYed2mjlXAuGlhrxzmJWzyPk1H5AVmMjvphEVF6NqeruLO2Oo23r74yqqvDgvRhLEwGKFIUEnVdRnX9MIR0NoP4oBKbT1kxFt4J+bAC8u3MSkj3CRsDKAoug1eoLzc1XJ1NuDjQ0bpQyxVGv2LsbBJs0P1zOoGsuPP3//mMQeWVaEkNpFoiBMQeJydxGsIiyDzNVFbwwJX44hOlRKC/mfwmFYBE07wJ5BAtuqQ/zojT7WNn6n9Eflb5EA7oNrUzuaTJZCg3T45mtq3mIVQ0csVO+PpzzcKtCRgcGcSpVkf6UC/iEcyAXCy+euVgAc/UzZM5PGXzLk= riad@Riads-MacBook-Pro.local"
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ3v/KMk1F3kqL6Rgav+J7+PEjYv+ogqeY+t6N5V7pQ+ riad"
         ];
-        # Password: `password` in secrets/users/riad.yaml (`mkpasswd -m yescrypt`); key-only until it exists.
         hashedPasswordFile = lib.mkIf (secrets != null) config.sops.secrets.riad-password.path;
       };
 
-      sops.secrets.riad-password = lib.mkIf (secrets != null) {
-        sopsFile = secrets;
-        key = "password";
-        neededForUsers = true;
+      sops.secrets = lib.mkIf (secrets != null) {
+        riad-password = {
+          sopsFile = secrets;
+          key = "password";
+          neededForUsers = true;
+        };
+        riad-ssh-key = {
+          sopsFile = secrets;
+          key = "ssh-private-key";
+          owner = "riad";
+        };
       };
 
       home-manager.users.riad = ./home.nix;

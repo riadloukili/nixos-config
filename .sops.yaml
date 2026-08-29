@@ -1,18 +1,21 @@
-# Recipients. Naming: `user-<name>` for a person's admin age key
-# (~/.config/sops/age/keys.txt), `host-<name>` for a machine's key, derived from
-# its SSH host key (`ssh-to-age < /etc/ssh/ssh_host_ed25519_key.pub`, or
-# `just sops-add-host <name> <ip>`). Add a key under `keys:`, then list it
-# in the rules that should include it.
+# Recipients, all derived from ed25519 SSH keys with ssh-to-age:
+#   user-<name>   the person's single SSH keypair (stored in secrets/users/<name>.yaml and
+#                 provisioned to every host listed on that file; the age identity
+#                 ~/.config/sops/age/keys.txt is derived from it at home-manager activation)
+#   host-<name>   a machine's key (/etc/ssh/ssh_host_ed25519_key.pub, or
+#                 `just sops-add-host <name> <ip>`)
+# Add a key under `keys:`, then list it in the rules that should include it,
+# then `sops updatekeys --yes secrets/**/*.yaml` from a machine that can already decrypt.
 #
 # Files by scope (hosts decrypt all of them at boot; a user file is also
 # readable by that user):
 #   secrets/common.yaml         everything
 #   secrets/hosts/common.yaml   every host
-#   secrets/hosts/<name>.yaml   one host       (rule: [admins, *host-<name>])
+#   secrets/hosts/<name>.yaml   one host       (rule: [*user-riad, *host-<name>])
 #   secrets/users/common.yaml   every user
 #   secrets/users/<name>.yaml   one user       (rule: [*user-<name>, hosts the user is on])
 keys:
-  - &user-riad age1vpwzq7ae6kysut2tu32u4hx799dmt4vdh2klh576pcfqv2rdxves3es9ka
+  - &user-riad age10lja78hfccgn20p7gvy7gahmjt5nhw4vgdk830gcmd499dc5vpjs56vx4x
   - &host-eleuthia age190vlwmgk838afm7thk23n74wjvrhrlmrwa6dw8gkh8glawjxcujsnpye78
 creation_rules:
   - path_regex: secrets/common\.yaml$
