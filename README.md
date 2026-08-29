@@ -1,138 +1,89 @@
 # nixos-config
 
-Flake-based NixOS configuration for my machines: headless homelab servers, cloud VMs and a laptop with Hyprland + Mango.
-
-- **NixOS**: `nixos-unstable` by default, `nixos-26.05` available per host (`channel = "stable"`).
-- **Structure**: [flake-parts](https://flake.parts) + [import-tree](https://github.com/vic/import-tree), dendritic style — every file under `modules/` is auto-imported and registers named *aspects*; a host is an import list.
-- **Disks**: [disko](https://github.com/nix-community/disko) layouts, reusable per machine class.
-- **Deploy**: [nh](https://github.com/nix-community/nh) locally, [deploy-rs](https://github.com/serokell/deploy-rs) push, `system.autoUpgrade` pull from `main`.
-- **Secrets**: [sops-nix](https://github.com/Mic92/sops-nix) for the system, [secretspec](https://secretspec.dev) for the dev shell.
-- **Programs**: [nix-wrapper-modules](https://github.com/BirdeeHub/nix-wrapper-modules) for nvim/zsh/tmux/git/btop (runnable anywhere with `nix run`). Every program has a default config in this repo; an optional dotfiles checkout overrides entries per program.
-- **Installers**: live ISOs per role or per host, with an offline `install-<host>` command.
-
-Hosts are named after GAIA's subfunctions (Horizon Forbidden West): `apollo` (homelab), `eleuthia` (laptop); free: `aether artemis demeter hades hephaestus minerva poseidon`.
-
-## Layout
+My NixOS machines: a homelab server, a laptop, and room for cloud VMs.
 
 ```text
-flake.nix              inputs only — never edited to add hosts or features
-justfile               all day-to-day tasks (`just`)
-modules/
-  flake/               flake-level plumbing: hosts inventory, channels, deploy, installers, devshell, checks
-  core/                aspects every host gets (nix, ssh, users, gc, nh, boot loaders, ...)
-  roles/               pure import lists: base → server → homelab | cloud ; laptop
-  services/            parametrised modules with `my.<x>` options (docker, firewall, auto-update, tailscale)
-  hardware/            hardware aspects + disko/ layouts
-  desktop/             NixOS halves of the desktop (greetd, compositors, pipewire, portals, fonts, keyboard)
-  home/                home-manager aspects (cli, neovim, dotfiles, wayland stack, ...)
-  wrappers/            nix-wrapper-modules programs → also flake packages
-  secrets/             sops-nix wiring and individual secrets
-  installer/           live-ISO base and the per-host install script
-  hosts/<name>/        default.nix (inventory + software), hardware.nix, disko.nix
-secrets/               sops-encrypted YAML (common.yaml, <host>.yaml, user.yaml, devshell.yaml)
+flake.nix        inputs only
+flake/           how the flake outputs are built (auto-imported flake-parts modules): hosts, ISOs,
+                 wrappers, devshell, formatter/lints — read once, rarely touched
+hosts/<provider>/<name>/   one machine: default.nix (profiles + users + options), hardware.nix, disko.nix
+profiles/        presets a host composes: base → server | desktop → laptop
+users/           system users; users/<name>/home.nix is their home-manager config
+modules/         one small NixOS module per thing (docker, firewall, gc, secrets, desktop/*, hardware/*, boot/*)
+home/            small home-manager modules (cli, dev, neovim, wayland, desktop, dotfiles) + defaults/
+wrappers/        programs bundled with their config (nvim, zsh, tmux, git, btop) + defaults/
+disko/           disk layouts, functions of { device, swapSize }
+installer/       live-ISO base + the offline install-<host> script
+secrets/         sops-encrypted YAML; .sops.yaml lists recipients
 ```
 
-### How composition works
+Hosts are named after GAIA's subfunctions (Horizon Forbidden West): `apollo`, `eleuthia`; free: `aether artemis demeter hades hephaestus minerva poseidon`.
 
-Each file contributes aspects:
+## How a machine is defined
+
+`hosts/home/eleuthia/default.nix`:
 
 ```nix
-{ flake.modules.nixos.services-tailscale = { ... }; }
-{ flake.modules.homeManager.home-cli = { ... }; }
+{
+  imports = [
+    ../../../profiles/laptop.nix
+    ../../../users/riad.nix
+    ../../../modules/boot/systemd-boot.nix
+    ../../../modules/hardware/intel.nix
+    ../../../modules/hardware/thinkpad.nix
+  ];
+  system.stateVersion = "26.11";
+  my.repo.localPath = "/home/riad/personal/nixos-config";
+}
 ```
 
-Roles are import lists of aspects; hosts import a role plus hardware aspects and register themselves in the inventory:
+- `flake/hosts.nix` finds every `hosts/<provider>/<name>/`, sets `networking.hostName = <name>` and `$CLOUD_PROVIDER = <provider>`, and adds `hardware.nix` + `disko.nix` next to `default.nix`.
+- Profiles are plain modules that import `modules/*` and add `home/*` through `home-manager.sharedModules`. Import whatever you need; the module system deduplicates by path.
+- Options live under `my.*` only where a module needs parameters (`my.firewall`, `my.docker`, `my.autoUpdate`, `my.gc`, `my.secrets`, `my.repo`, `my.dotfiles`). Everything else is on/off by import.
+- `stateVersion` is set per host and never changes.
 
-```nix
-flake.hosts.apollo = {
-  stateVersion = "26.11";
-  deploy.hostname = "apollo";
-  modules = [ config.flake.modules.nixos.hosts-apollo ];               # software
-  hardwareModules = [ ...hosts-apollo-hardware ...hosts-apollo-disk ]; # excluded from the live ISO
-};
-```
-
-`modules/flake/hosts.nix` turns the inventory into `nixosConfigurations`, `deploy.nix` into deploy-rs nodes, `installers.nix` into `iso-<host>` images.
-
-Rules of thumb:
-
-- One concern per file. Add a feature = add a file.
-- Aspects are on/off by import. `mkEnableOption` only for modules that need parameters (`my.firewall`, `my.docker`, ...).
-- An aspect is imported by exactly one role (flake-parts does not deduplicate module imports).
-- home-manager aspects are added through `my.home.modules`; every user in `core/users` picks them up.
-- Never bump `stateVersion`.
-
-## Everyday use
+## Daily use
 
 ```sh
-nix develop            # or direnv; installs pre-commit hooks
-just                   # list tasks
-just switch            # rebuild this machine (nh)
-just build apollo      # build a host without activating
-just deploy apollo     # deploy-rs with magic rollback
-just push apollo       # ad-hoc: nh os switch --target-host
-just iso eleuthia      # build result-iso-eleuthia/iso/nixos-eleuthia.iso
-just check             # nix flake check: formatting, lints, hooks, hosts, deploy schema
+nix develop          # or direnv; installs the pre-commit hooks
+just                 # list tasks
+just switch          # rebuild this machine (nh)
+just build apollo    # build another host without activating
+just push apollo     # build here, activate over SSH
+just iso eleuthia    # installer image → result-iso-eleuthia/iso/nixos-eleuthia.iso
+just check           # nix flake check: formatting, lints, hooks, every host
 just fmt
 ```
 
-Servers also pull `main` daily (`my.autoUpdate`), so **pushing to `main` deploys**. CI builds every host and ISO on pull requests; keep the branch green before merging.
+Servers (`profiles/server.nix`) pull `main` daily (`my.autoUpdate`), so **pushing to `main` deploys**. CI runs `nix flake check` and builds the ISOs on pull requests.
 
 ## Installing a machine
 
-1. Add `modules/hosts/<name>/` (copy `_template`), pick a disko layout and set the device.
-1. `just iso <name>`, write the image to USB (`dd if=result-iso-<name>/iso/*.iso of=/dev/sdX bs=4M status=progress`).
-1. Boot it. You get the host's real desktop/server config live (user `riad`, password `nixos`, SSH keys work).
-1. `install-<name> --dry-run`, then `install-<name>`. It runs the disko script (asks for confirmation, prompts for the LUKS passphrase on encrypted layouts) and `nixos-install` from the closure on the image — no network needed.
-1. Reboot, then from this repo: `just sops-add-host <name> <ip>` and add the host to the relevant `creation_rules` in `.sops.yaml`; `just deploy <name>`.
-1. On desktops, optionally clone your dotfiles to `~/personal/dotfiles` (defaults are used for anything missing) and run `fprintd-enroll`.
+1. Create `hosts/<provider>/<name>/` with `default.nix`, `hardware.nix` (from `nixos-generate-config --no-filesystems --show-hardware-config`) and `disko.nix` (a call to one of `disko/*.nix`).
 
-Generic images: `just iso server` / `just iso desktop`.
+1. Either build the image — `just iso <name>`, `dd` it to USB, boot, run `install-<name>` (offline; runs disko + nixos-install from the closure on the image) — or use the stock installer:
 
-### Installing from the stock NixOS installer (no custom ISO)
+   ```sh
+   sudo nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko/latest -- \
+     --mode destroy,format,mount --flake 'github:riadloukili/nixos-config#<name>'
+   sudo nixos-install --flake 'github:riadloukili/nixos-config#<name>' --no-root-passwd --no-channel-copy
+   sudo nixos-enter --root /mnt -c 'passwd riad'   # no password until secrets are enrolled
+   ```
 
-Boot any NixOS installer, open a terminal, check the target disk matches the host's `disko.nix` (`lsblk`), then:
+1. Reboot, then from a machine with the admin age key: `just sops-add-host <name> <ip>`, add `*<name>` to the relevant `creation_rules` in `.sops.yaml`, `just secrets-edit common` (needs `riad-password` from `just mkpasswd`, and `tailscale-auth-key` for servers), `just push <name>`.
 
-```sh
-sudo nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko/latest -- \
-  --mode destroy,format,mount --flake 'github:riadloukili/nixos-config#<name>'     # LUKS layouts prompt for the passphrase
-sudo nixos-install --flake 'github:riadloukili/nixos-config#<name>' --no-root-passwd --no-channel-copy
-sudo nixos-enter --root /mnt -c 'passwd riad'   # until secrets are enrolled the user has no password
-reboot
-```
-
-Use `github:riadloukili/nixos-config/<branch>#<name>` for an unmerged branch. `nixos-install --flake` builds into `/mnt`'s store, so the live system's RAM is not a limit (unlike `disko-install`, which builds in the live store first).
+Live images log in as `riad` / `nixos`; SSH keys work everywhere.
 
 ## Secrets
 
-- **System secrets** (sops-nix): `secrets/common.yaml` is readable by every host; `secrets/<host>.yaml` by one host. Recipients are the admin age key (`~/.config/sops/age/keys.txt`) plus each host's SSH host key converted with `ssh-to-age`. `just secrets-edit common` creates or edits a file. Declare a secret in a small aspect under `modules/secrets/` (see `user-password.nix`).
-- **User secrets** (home-manager): `secrets/user.yaml`, decrypted with the admin age key.
-- **Dev-shell secrets** (secretspec): `secretspec.toml` declares them, `secrets/devshell.yaml` holds them (`sops://` provider). `secretspec check` / `secretspec run -- <cmd>`. secretspec is *not* a NixOS secret backend.
-
-Expected keys in `common.yaml`: `riad-password` (`mkpasswd -m yescrypt`), `tailscale-auth-key`.
+sops-nix with age. Recipients: the admin key (`~/.config/sops/age/keys.txt`) plus each host's SSH host key via `ssh-to-age`. `secrets/common.yaml` is readable by every host, `secrets/<host>.yaml` by one host, `secrets/user.yaml` by the user's home-manager. `modules/secrets.nix` only activates once `secrets/common.yaml` exists, so a fresh host builds before enrolment; add secrets there.
 
 ## Dotfiles: defaults + optional overrides
 
-Every program this config installs ships its own default config next to the aspect that installs it (`modules/desktop/defaults/{hypr,mango}`, `modules/home/defaults/{waybar,swaync,wlogout,rofi,nvim}`, `modules/wrappers/defaults/{tmux.conf,p10k.zsh}`). A dotfiles checkout is optional and only *overrides* what it contains:
+Every program this config installs has a default config in the repo (`home/defaults/<name>`, `wrappers/defaults/`). A dotfiles checkout at `~/personal/dotfiles` (`my.dotfiles.path`) is optional and overrides per entry: at activation, `~/.config/<name>` is linked to `<checkout>/<name>` if it exists, otherwise to the default. Overrides are hot-editable (no rebuild); changing a default is a rebuild. The `nvim`, `tmux` and `zsh` wrappers resolve the same way at start-up, so `nix run github:riadloukili/nixos-config#nvim` works on any machine with or without the checkout.
 
-- `my.dotfiles.path` (default `~/personal/dotfiles`) is checked per entry at activation: `~/.config/<name>` → `<checkout>/<name>` if it exists, otherwise → the store default. Missing checkout, or a checkout with only `hypr/`, both work.
-- `my.dotfiles.store` (or `flake.dotfiles.store` for the wrappers) can point at a flake input instead of a checkout: `inputs.dotfiles = { url = "github:<you>/dotfiles"; flake = false; }`.
-- Wrappers resolve the same way at start-up: `nvim` uses `<dotfiles>/nvim` else the LazyVim starter, `tmux` sources `<dotfiles>/tmux/tmux.conf` else the default, `zsh` sources `<dotfiles>/zsh/p10k.zsh` else the default and `zsh/zshrc.local` if present.
-
-So `nix run github:riadloukili/nixos-config#nvim` (or `#tmux`, `#zsh`, `#git`, `#btop`) works on any machine with Nix, with or without your dotfiles cloned. Overrides in a checkout are hot-editable (symlinks into the checkout, no rebuild); changing a *default* is a rebuild.
-
-Layout of a dotfiles repo: top-level directories named after the entries (`hypr/`, `mango/`, `waybar/`, `rofi/`, `swaync/`, `wlogout/`, `nvim/`, `tmux/tmux.conf`, `zsh/p10k.zsh`, `zsh/zshrc.local`).
+Entries: `hypr/` `waybar/` `rofi/` `swaync/` `wlogout/` `nvim/` `tmux/tmux.conf` `zsh/p10k.zsh` `zsh/zshrc.local`. See [riadloukili/dotfiles](https://github.com/riadloukili/dotfiles).
 
 ## Editor
 
-nixd is in the dev shell. Suggested settings (e.g. for nvim-lspconfig):
-
-```lua
-settings = { nixd = {
-  nixpkgs = { expr = "import (builtins.getFlake (toString ./.)).inputs.nixpkgs { }" },
-  options = {
-    nixos = { expr = "(builtins.getFlake (toString ./.)).nixosConfigurations.eleuthia.options" },
-    home_manager = { expr = "(builtins.getFlake (toString ./.)).nixosConfigurations.eleuthia.options.home-manager.users.type.getSubOptions []" },
-  },
-} }
-```
+`nixd` is in the dev shell; point it at `(builtins.getFlake (toString ./.)).nixosConfigurations.eleuthia.options` for option completion.

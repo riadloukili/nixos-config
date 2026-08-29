@@ -1,45 +1,32 @@
 # CLAUDE.md
 
-Guidance for Claude Code when working in this repository.
-
-## What this is
-
-A flake-parts + import-tree ("dendritic") NixOS configuration for a small personal fleet. No application code, no tests; "building" means evaluating closures. README.md is accurate — read it first.
+Guidance for Claude Code in this repository. README.md is accurate — read it first.
 
 ## Commands
 
 ```bash
-nix develop                 # dev shell (also via direnv); installs pre-commit hooks
-just                        # list tasks
-just check                  # nix flake check: treefmt, deadnix/statix, pre-commit, inventory, deploy schema, all hosts
-just fmt                    # nix fmt (treefmt: nixfmt, deadnix, statix, yamlfmt, mdformat, taplo, just, shfmt, typos)
+nix develop                        # dev shell (direnv works); installs pre-commit hooks
+just check                         # nix flake check: treefmt, statix/deadnix, pre-commit, builds every host
+just fmt                           # nix fmt (treefmt)
 nix eval .#nixosConfigurations.<host>.config.system.build.toplevel.drvPath   # fast single-host eval
-nix build .#nixosConfigurations.<host>.config.system.build.toplevel          # full single-host build
-nix build .#iso-<host>|iso-server|iso-desktop                                # installer images
+nix build .#iso-<host>|iso-server|iso-desktop
 ```
 
 **Flakes only see git-tracked files: `git add` new files before evaluating.**
 
-## Architecture
+## Structure
 
-- `flake.nix` holds inputs only; `outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } (import-tree ./modules)`. Never add hosts or imports to it.
-- Every `modules/**/*.nix` is a flake-parts module. Paths containing `/_` are ignored (`_template` dirs/files).
-- Aspects: `flake.modules.nixos.<dir>-<name>` and `flake.modules.homeManager.home-<name>`. Reference other aspects via the *flake-level* `config.flake.modules...`. Inner NixOS/HM modules shadow `config`; bind the flake config in a `let aspects = config.flake.modules;` at file top (see `modules/desktop/compositors.nix`).
-- Roles (`modules/roles`) are pure import lists: `base` → `server` → `homelab` | `cloud`; `laptop`. **An aspect must be imported by exactly one role/host path** — flake-parts does not deduplicate anonymous module imports, so importing the same aspect twice raises "option declared multiple times".
-- Hosts: `modules/hosts/<name>/{default,hardware,disko}.nix` register `flake.hosts.<name>` (inventory: channel, provider, stateVersion, deploy, iso, modules, hardwareModules). `modules/flake/hosts.nix` builds `nixosConfigurations`; `deploy.nix` derives deploy-rs nodes; `installers.nix` derives `iso-<host>` (software modules only + `installer-base` + `installer-target`).
-- Options namespace: `my.*` (`my.firewall`, `my.docker`, `my.autoUpdate`, `my.gc`, `my.secrets`, `my.desktop.compositors`, `my.repo`, `my.home.modules`, `my.installer`, HM: `my.dotfiles`). Only parametrised modules have options; everything else is on/off by import.
-- home-manager aspects reach users through `my.home.modules` (set by roles/aspects); `core/users/riad.nix` imports that list.
-- Channels: `flake.channels.{unstable,stable}` (nixpkgs + matching home-manager). Hosts default to unstable. `pkgs.stable`/`pkgs.unstable` overlay exists for one-off pins.
-- Disko layouts are functions in `flake.diskoLayouts.<name> { device; swapSize; }`; host `disko.nix` calls one. Every layout names its disk `main`.
-- Dotfiles are layered: aspects declare `my.dotfiles.entries.<name>.default = ./defaults/<name>` (the shipped config); `home-dotfiles` links `~/.config/<name>` to `<my.dotfiles.path>/<name>` when that exists in the checkout, else to the default — resolved at activation. Wrappers (nvim/tmux/zsh) do the same at runtime via `flake.dotfiles.runtime`/`store`. Adding a configurable program = add its default dir + one `entries` line; never require the checkout.
-- Wrappers (`modules/wrappers`) use nix-wrapper-modules; they are exported as `packages.<system>.<name>` automatically and installed for the user by `home-wrappers`; the zsh wrapper is the login shell (`core-zsh-wrapper`). Never overlay the git wrapper as `pkgs.git`.
-- Secrets: `secrets-sops` only enables sops once `secrets/common.yaml` exists (`my.secrets.enable`), so fresh hosts build before enrolment. Add a secret = add a file under `modules/secrets/` guarded by `my.secrets.enable`.
-- Firewall is touched by `services/firewall.nix`, `services/docker.nix` (trusted interfaces, rp filter, UDP 53), `core/ssh.nix` (openFirewall) and `services/tailscale.nix`.
-- Pushing to `main` deploys: server-role hosts run `system.autoUpgrade` from `github:riadloukili/nixos-config#<hostname>` daily. Work on branches; CI must be green.
+- `flake.nix` = inputs; `flake/*.nix` are flake-parts modules auto-imported by import-tree (hosts discovery, ISOs, wrappers, devshell, treefmt, git-hooks, checks). Everything outside `flake/` is a plain NixOS / home-manager module imported by path — no aspect registry, no inventory DSL.
+- `hosts/<provider>/<name>/`: `default.nix` (imports profiles + users, sets options), `hardware.nix`, `disko.nix`. `flake/hosts.nix` adds the latter two automatically (so `flake/iso.nix` can reuse `default.nix` for the live image) and sets `networking.hostName` / `$CLOUD_PROVIDER` from the directory names. Adding a host = adding a directory.
+- `profiles/`: `base` → `server` | `desktop` → `laptop`. They import `modules/*` and add `home/*` via `home-manager.sharedModules`. Importing a module from several places is fine (path-deduplicated).
+- `users/<name>.nix` = system user + `home-manager.users.<name> = ./<name>/home.nix`.
+- `modules/`: one thing per file; `my.<x>` options only when parametrised (`my.firewall`, `my.docker`, `my.autoUpdate`, `my.gc`, `my.secrets`, `my.repo`, `my.installer`). `modules/secrets.nix` declares all sops secrets and is inert until `secrets/common.yaml` exists.
+- `home/dotfiles.nix`: layered configs. A module that installs a program declares `my.dotfiles.entries.<name>.default = ./defaults/<name>`; activation links `~/.config/<name>` to `<my.dotfiles.path>/<name>` if the checkout has it, else to the default. Never require the checkout.
+- `wrappers/<name>.nix` = nix-wrapper-modules module, auto-registered by `flake/wrappers.nix` as `flake.wrappers.<name>` and `packages.<system>.<name>`; `wrappers/dotfiles.nix` is a shared constant, not a wrapper. The zsh wrapper is the login shell (`modules/shell.nix`); never overlay the git wrapper as `pkgs.git`.
+- `disko/<layout>.nix` = `{ device, swapSize } -> nixosModule`; every layout names its disk `main`.
+- Servers pull `main` daily (`modules/auto-update.nix`): pushing to `main` deploys. Work on branches; CI must be green.
 
 ## Conventions
 
-- One concern per file, small files, comment at the top saying what the file is for.
-- Formatting/lints are enforced by `nix flake check`; run `just fmt` before committing.
-- `stateVersion` is per host in the inventory and never changes.
-- Host names come from Horizon Forbidden West's GAIA subfunctions.
+- Small files, a comment at the top saying what the file is for; `nix fmt` before committing (enforced by hooks).
+- `stateVersion` is set per host and never bumped. Host names: Horizon Forbidden West GAIA subfunctions.
