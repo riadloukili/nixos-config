@@ -1,6 +1,7 @@
 # `install-<host>` on a host's live ISO: runs the host's disko script (asks for
 # confirmation, wipes the declared disks) then nixos-install from the closure
 # that is already on the image — no network needed.
+{ mods, ... }:
 {
   flake.modules.nixos."installer/target" =
     {
@@ -37,6 +38,8 @@
       };
     in
     {
+      imports = [ mods.nixos.installer.base ];
+
       options.my.installer.target = {
         toplevel = lib.mkOption { type = lib.types.package; };
         diskoScript = lib.mkOption { type = lib.types.package; };
