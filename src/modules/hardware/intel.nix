@@ -4,10 +4,7 @@
 { inputs, ... }:
 {
   flake.modules.nixos."hardware/intel" = {
-    imports = with inputs.nixos-hardware.nixosModules; [
-      common-cpu-intel
-      common-gpu-intel
-    ];
+    imports = [ inputs.nixos-hardware.nixosModules.common-cpu-intel ]; # also pulls common-gpu-intel
     hardware.graphics.enable = true;
     hardware.intelgpu.vaapiDriver = "intel-media-driver";
     services.thermald.enable = true;

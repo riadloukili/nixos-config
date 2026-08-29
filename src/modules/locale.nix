@@ -1,3 +1,4 @@
+# Time zone and locale.
 {
   flake.modules.nixos."locale" =
     { lib, ... }:

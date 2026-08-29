@@ -1,5 +1,5 @@
-# apollo hardware (Intel, NVMe). Regenerate with
-# `nixos-generate-config --no-filesystems --show-hardware-config` after install.
+# apollo hardware (Intel, NVMe), from the previous install's generated config.
+# Regenerate with `nixos-generate-config --no-filesystems --show-hardware-config`.
 {
   flake.modules.nixos."hosts/apollo/hardware" =
     {
@@ -21,6 +21,7 @@
         "rtsx_usb_sdmmc"
       ];
       boot.kernelModules = [ "kvm-intel" ];
+      hardware.enableRedistributableFirmware = true;
       hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
       networking.useDHCP = lib.mkDefault true;
     };

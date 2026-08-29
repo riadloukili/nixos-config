@@ -1,3 +1,4 @@
+# Fonts: Nerd Fonts for terminals/bar, Noto for coverage, Inter for UI.
 {
   flake.modules.nixos."desktop/fonts" =
     { pkgs, ... }:
