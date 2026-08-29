@@ -13,20 +13,30 @@
 #   secrets/users/<name>.yaml   one user       (rule: [*user-<name>, hosts the user is on])
 keys:
   - &user-riad age1vpwzq7ae6kysut2tu32u4hx799dmt4vdh2klh576pcfqv2rdxves3es9ka
+  - &host-eleuthia age190vlwmgk838afm7thk23n74wjvrhrlmrwa6dw8gkh8glawjxcujsnpye78
 creation_rules:
   - path_regex: secrets/common\.yaml$
     key_groups:
       - age:
           - *user-riad
+          - *host-eleuthia
   - path_regex: secrets/hosts/common\.yaml$
     key_groups:
       - age:
           - *user-riad
+          - *host-eleuthia
+  - path_regex: secrets/hosts/eleuthia\.yaml$
+    key_groups:
+      - age:
+          - *user-riad
+          - *host-eleuthia
   - path_regex: secrets/users/common\.yaml$
     key_groups:
       - age:
           - *user-riad
+          - *host-eleuthia
   - path_regex: secrets/users/riad\.yaml$
     key_groups:
       - age:
           - *user-riad
+          - *host-eleuthia
