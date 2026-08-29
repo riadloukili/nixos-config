@@ -2,8 +2,9 @@
   description = "Riad's NixOS machines";
 
   # Inputs only. Every .nix file in the directories below is a flake-parts
-  # module (auto-imported by import-tree): ./flake builds the outputs, the
-  # others register NixOS / home-manager aspects (see flake/mods.nix).
+  # module (auto-imported by import-tree): ./lib is plumbing (the aspect
+  # registry), ./outputs defines the flake outputs, the others register
+  # NixOS / home-manager aspects (see lib/mods.nix).
   # Exception: under users/<name>/ only default.nix is loaded; the rest of
   # that folder is the user's own (home.nix, scripts, ...), imported by it.
   inputs = {
@@ -43,7 +44,8 @@
     inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } (
       inputs.import-tree [
-        ./flake
+        ./lib
+        ./outputs
         ./modules
         ./profiles
         (inputs.import-tree.filter (inputs.nixpkgs.lib.hasSuffix "default.nix") ./users)

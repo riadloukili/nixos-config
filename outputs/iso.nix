@@ -9,6 +9,7 @@
   inputs,
   lib,
   mods,
+  hosts,
   ...
 }:
 let
@@ -27,7 +28,7 @@ let
   generic = lib.genAttrs [ "server" "desktop" ] (
     profile:
     mkIso profile (
-      config.flake.lib.baseModules {
+      hosts.baseModules {
         name = "nixos-${profile}";
         provider = "live";
       }
@@ -46,7 +47,7 @@ let
       in
       lib.nameValuePair host.name (
         mkIso host.name (
-          config.flake.lib.baseModules host
+          hosts.baseModules host
           ++ [
             mods.nixos.hosts.${host.name}.default
             mods.nixos.installer.target
@@ -60,7 +61,7 @@ let
           ]
         )
       )
-    ) config.flake.lib.hosts
+    ) hosts.all
   );
 in
 {
