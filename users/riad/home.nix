@@ -72,13 +72,15 @@ in
     };
   };
 
-  # My SSH keypair comes from secrets/users/riad.yaml (decrypted by the host to
-  # /run/secrets/riad-ssh-key); install it as ~/.ssh/id_ed25519 at activation.
+  # My SSH keypair: the private key comes from secrets/users/riad.yaml
+  # (decrypted by the host to /run/secrets/riad-ssh-key) and is installed as
+  # ~/.ssh/id_ed25519 at activation; the public half is just a file.
+  home.file.".ssh/id_ed25519.pub".text =
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ3v/KMk1F3kqL6Rgav+J7+PEjYv+ogqeY+t6N5V7pQ+ riad\n";
   home.activation.sshKey = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     if [ -r /run/secrets/riad-ssh-key ]; then
       run mkdir -p -m 700 "$HOME/.ssh"
       run install -m 600 /run/secrets/riad-ssh-key "$HOME/.ssh/id_ed25519"
-      run ${pkgs.openssh}/bin/ssh-keygen -y -f "$HOME/.ssh/id_ed25519" > "$HOME/.ssh/id_ed25519.pub"
     fi
   '';
 
