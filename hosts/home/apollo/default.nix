@@ -1,16 +1,19 @@
 # apollo — homelab server.
+{ mods, ... }:
 {
-  imports = [
-    ../../../profiles/server.nix
-    ../../../users/riad.nix
-    ../../../modules/boot/systemd-boot.nix
-  ];
+  flake.modules.nixos.host-apollo = {
+    imports = with mods.nixos; [
+      profile-server
+      user-riad
+      boot-systemd-boot
+    ];
 
-  system.stateVersion = "26.11";
+    system.stateVersion = "26.11";
 
-  my.firewall.tcp = [
-    80
-    443
-  ];
-  my.autoUpdate.allowReboot = true;
+    my.firewall.tcp = [
+      80
+      443
+    ];
+    my.autoUpdate.allowReboot = true;
+  };
 }

@@ -1,15 +1,18 @@
 # eleuthia — personal laptop (ThinkPad Yoga, Intel).
+{ mods, ... }:
 {
-  imports = [
-    ../../../profiles/laptop.nix
-    ../../../users/riad.nix
-    ../../../modules/boot/systemd-boot.nix
-    ../../../modules/hardware/intel.nix
-    ../../../modules/hardware/thinkpad.nix
-    ../../../modules/hardware/fingerprint.nix
-    ../../../modules/hardware/convertible.nix
-  ];
+  flake.modules.nixos.host-eleuthia = {
+    imports = with mods.nixos; [
+      profile-laptop
+      user-riad
+      boot-systemd-boot
+      hardware-intel
+      hardware-thinkpad
+      hardware-fingerprint
+      hardware-convertible
+    ];
 
-  system.stateVersion = "26.11";
-  my.repo.localPath = "/home/riad/personal/nixos-config";
+    system.stateVersion = "26.11";
+    my.repo.localPath = "/home/riad/personal/nixos-config";
+  };
 }
