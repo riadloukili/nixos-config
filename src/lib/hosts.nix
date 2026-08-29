@@ -1,6 +1,7 @@
 # Host discovery (plumbing, not an output). Provides the `hosts` argument:
 #   hosts.all          [ { name; provider; } ] for every hosts/<provider>/<name>/
 #   hosts.baseModules  host: [ modules every host and live image gets ]
+#   hosts.mkSystem     modules: a nixosSystem with this flake's specialArgs
 # Consumed by src/outputs/hosts.nix and src/outputs/iso.nix.
 { inputs, lib, ... }:
 let
@@ -21,8 +22,18 @@ in
       {
         networking.hostName = host.name;
         nixpkgs.hostPlatform = "x86_64-linux";
+        # Read by the p10k prompt segment in the dotfiles.
         environment.variables.CLOUD_PROVIDER = host.provider;
       }
     ];
+
+    mkSystem =
+      modules:
+      inputs.nixpkgs.lib.nixosSystem {
+        specialArgs = {
+          inherit inputs;
+        };
+        inherit modules;
+      };
   };
 }

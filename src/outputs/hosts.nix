@@ -6,25 +6,27 @@
 #   disko.nix     hosts/<name>/disk       disk layout (imports a src/disko/* aspect)
 # The live ISO (src/outputs/iso.nix) reuses hosts/<name>/default without the other two.
 {
-  inputs,
   lib,
   mods,
   hosts,
   ...
 }:
 let
+  aspect =
+    host: file: attr:
+    mods.nixos.hosts.${host.name}.${attr}
+      or (throw "hosts/${host.provider}/${host.name}/${file} is missing (or does not register hosts/${host.name}/${attr})");
+
   mkHost =
     host:
-    inputs.nixpkgs.lib.nixosSystem {
-      specialArgs = {
-        inherit inputs;
-      };
-      modules = hosts.baseModules host ++ [
-        mods.nixos.hosts.${host.name}.default
-        mods.nixos.hosts.${host.name}.hardware
-        mods.nixos.hosts.${host.name}.disk
-      ];
-    };
+    hosts.mkSystem (
+      hosts.baseModules host
+      ++ [
+        (aspect host "default.nix" "default")
+        (aspect host "hardware.nix" "hardware")
+        (aspect host "disko.nix" "disk")
+      ]
+    );
 in
 {
   flake.nixosConfigurations = lib.listToAttrs (

@@ -6,7 +6,6 @@
 #   nix build .#iso-desktop  generic live image with the desktop profile
 {
   config,
-  inputs,
   lib,
   mods,
   hosts,
@@ -15,21 +14,19 @@
 let
   mkIso =
     name: modules:
-    (inputs.nixpkgs.lib.nixosSystem {
-      specialArgs = {
-        inherit inputs;
-      };
-      modules = modules ++ [
+    (hosts.mkSystem (
+      modules
+      ++ [
         mods.nixos.installer.base
         { my.installer.name = name; }
-      ];
-    }).config.system.build.isoImage;
+      ]
+    )).config.system.build.isoImage;
 
   generic = lib.genAttrs [ "server" "desktop" ] (
     profile:
     mkIso profile (
       hosts.baseModules {
-        name = "nixos-${profile}";
+        name = profile;
         provider = "live";
       }
       ++ [
