@@ -1,4 +1,4 @@
-# eleuthia — personal laptop (ThinkPad Yoga, Intel).
+# eleuthia — personal laptop (ThinkPad X13 Yoga Gen 4, Intel).
 { mods, ... }:
 {
   flake.modules.nixos."hosts/eleuthia/default" = {
@@ -7,7 +7,7 @@
       users.riad
       boot.systemd-boot
       hardware.intel
-      hardware.thinkpad
+      hardware.thinkpad-x13-yoga
       hardware.fingerprint
       hardware.convertible
     ];

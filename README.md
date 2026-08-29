@@ -37,7 +37,7 @@ Every `.nix` file is a flake-parts module that *registers* an aspect under a nam
 # hosts/home/eleuthia/default.nix
 { mods, ... }: {
   flake.modules.nixos."hosts/eleuthia/default" = {
-    imports = with mods.nixos; [ profiles.laptop users.riad boot.systemd-boot hardware.intel hardware.thinkpad ];
+    imports = with mods.nixos; [ profiles.laptop users.riad boot.systemd-boot hardware.intel hardware.thinkpad-x13-yoga-x13-yoga ];
     system.stateVersion = "26.11";
   };
 }
