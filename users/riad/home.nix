@@ -169,7 +169,15 @@ in
     };
   };
 
-  # GTK/Qt theming comes from the dotfiles (gtk-3.0, gtk-4.0, qt5ct, qt6ct, Kvantum).
+  # GTK/Qt theming comes from the dotfiles (gtk-3.0, gtk-4.0, qt5ct, qt6ct, Kvantum);
+  # the cursor theme they name has to be installed and exported here.
+  home.pointerCursor = lib.mkIf desktop {
+    enable = true;
+    gtk.enable = false; # gtk-3.0/settings.ini in the dotfiles already names it
+    package = pkgs.bibata-cursors;
+    name = "Bibata-Modern-Ice";
+    size = 24;
+  };
   xdg = {
     enable = true;
     userDirs.enable = desktop;
