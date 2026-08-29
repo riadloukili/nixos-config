@@ -1,6 +1,0 @@
-configuration {
-  modi: "drun,run,window";
-  show-icons: true;
-  terminal: "kitty";
-}
-@theme "Arc-Dark"

@@ -1,23 +1,19 @@
-# Fonts (p10k and waybar need a Nerd Font).
+{ pkgs, ... }:
 {
-  flake.modules.nixos.desktop-fonts =
-    { pkgs, ... }:
-    {
-      fonts = {
-        enableDefaultPackages = true;
-        packages = with pkgs; [
-          nerd-fonts.jetbrains-mono
-          nerd-fonts.fira-code
-          noto-fonts
-          noto-fonts-cjk-sans
-          noto-fonts-color-emoji
-          inter
-        ];
-        fontconfig.defaultFonts = {
-          monospace = [ "JetBrainsMono Nerd Font" ];
-          sansSerif = [ "Inter" ];
-          emoji = [ "Noto Color Emoji" ];
-        };
-      };
+  fonts = {
+    enableDefaultPackages = true;
+    packages = with pkgs; [
+      nerd-fonts.jetbrains-mono
+      nerd-fonts.fira-code
+      noto-fonts
+      noto-fonts-cjk-sans
+      noto-fonts-color-emoji
+      inter
+    ];
+    fontconfig.defaultFonts = {
+      monospace = [ "JetBrainsMono Nerd Font" ];
+      sansSerif = [ "Inter" ];
+      emoji = [ "Noto Color Emoji" ];
     };
+  };
 }
