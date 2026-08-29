@@ -1,0 +1,9 @@
+[files]
+extend-exclude = ["secrets/*.yaml", "flake.lock"]
+
+[default.extend-words]
+# Horizon Forbidden West subfunction names and Nix vocabulary
+eleuthia = "eleuthia"
+hades = "hades"
+mango = "mango"
+nixd = "nixd"
