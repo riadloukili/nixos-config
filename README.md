@@ -4,7 +4,8 @@ My NixOS machines: a homelab server, a laptop, and room for cloud VMs.
 
 ```text
 flake.nix        inputs only; import-tree loads every .nix file below as a flake-parts module
-flake/           builds the outputs: hosts discovery, ISOs, devshell, formatter/lints, the `mods` registry
+lib/             plumbing: mods.nix (the aspect registry → `mods` argument), hosts.nix (host discovery → `hosts` argument)
+outputs/         what the flake exports: hosts discovery, ISOs, devshell, lint/format/checks
 hosts/<provider>/<name>/   one machine: default.nix (profiles + users + options), hardware.nix, disko.nix
 profiles/        presets a host composes: base → server | desktop → laptop
 users/<name>/    one user: default.nix (system user, registers users.<name>) + whatever they want
@@ -30,7 +31,7 @@ Every `.nix` file is a flake-parts module that *registers* an aspect under a nam
 { flake.modules.homeManager.dotfiles = { config, lib, pkgs, ... }: { ... }; }
 ```
 
-`flake/mods.nix` hands the registry back to every file as the `mods` argument, nested by path (`"hardware/thinkpad"` → `mods.nixos.hardware.thinkpad`), so composition is by name — and each aspect carries a `key`, so importing the same one from several places is deduplicated:
+`lib/mods.nix` hands the registry back to every file as the `mods` argument, nested by path (`"hardware/thinkpad"` → `mods.nixos.hardware.thinkpad`), so composition is by name — and each aspect carries a `key`, so importing the same one from several places is deduplicated:
 
 ```nix
 # hosts/home/eleuthia/default.nix
@@ -43,7 +44,7 @@ Every `.nix` file is a flake-parts module that *registers* an aspect under a nam
 ```
 
 - Names mirror paths: `modules/desktop/hyprland.nix` → `mods.nixos.desktop.hyprland`; `modules/docker.nix` → `mods.nixos.docker`; `profiles/server.nix` → `mods.nixos.profiles.server`; `users/riad/default.nix` → `mods.nixos.users.riad`; `disko/server-btrfs.nix` → `mods.nixos.disko.server-btrfs`; `modules/dotfiles.nix` → `mods.homeManager.dotfiles`; a host registers `hosts/<name>/{default,hardware,disk}`. Files starting with `_` are helpers, not modules.
-- `flake/hosts.nix` finds every `hosts/<provider>/<name>/`, sets `networking.hostName = <name>` and `$CLOUD_PROVIDER = <provider>`, and builds `nixosConfigurations.<name>` from the three host aspects.
+- `outputs/hosts.nix` finds every `hosts/<provider>/<name>/`, sets `networking.hostName = <name>` and `$CLOUD_PROVIDER = <provider>`, and builds `nixosConfigurations.<name>` from the three host aspects.
 - A file may carry both halves of a feature (see `modules/desktop/hyprland.nix`: NixOS part + home-manager part).
 - Profiles own the software a class of machine needs (`desktop.tools` installs waybar/rofi/kitty/… system-wide). A user's folder owns everything about that user: `users/<name>/default.nix` is the system user and points `home-manager.users.<name>` at `./home.nix`, which is theirs to organise.
 - Options live under `my.*` only where an aspect needs parameters (`my.firewall`, `my.docker`, `my.autoUpdate`, `my.gc`, `my.secrets`, `my.repo`, `my.dotfiles`). Everything else is on/off by import.
