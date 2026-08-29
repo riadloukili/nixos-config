@@ -49,6 +49,8 @@
         ./home
         ./hosts
         ./installer
+        ./disko
+        ./wrappers
       ]
     );
 }
