@@ -26,19 +26,19 @@ Every `.nix` file is a flake-parts module that *registers* an aspect under a nam
 ```nix
 # src/modules/docker.nix
 { flake.modules.nixos.docker = { config, lib, pkgs, ... }: { ... }; }
-# src/modules/hardware/thinkpad.nix
-{ flake.modules.nixos."hardware/thinkpad" = { ... }; }
+# src/modules/hardware/fingerprint.nix
+{ flake.modules.nixos."hardware/fingerprint" = { ... }; }
 # src/modules/dotfiles.nix
 { flake.modules.homeManager.dotfiles = { config, lib, pkgs, ... }: { ... }; }
 ```
 
-`src/lib/mods.nix` hands the registry back to every file as the `mods` argument, nested by path (`"hardware/thinkpad"` → `mods.nixos.hardware.thinkpad`), so composition is by name — and each aspect carries a `key`, so importing the same one from several places is deduplicated:
+`src/lib/mods.nix` hands the registry back to every file as the `mods` argument, nested by path (`"hardware/fingerprint"` → `mods.nixos.hardware.fingerprint`), so composition is by name — and each aspect carries a `key`, so importing the same one from several places is deduplicated:
 
 ```nix
 # hosts/home/eleuthia/default.nix
 { mods, ... }: {
   flake.modules.nixos."hosts/eleuthia/default" = {
-    imports = with mods.nixos; [ profiles.laptop users.riad boot.systemd-boot hardware.intel hardware.thinkpad-x13-yoga-x13-yoga ];
+    imports = with mods.nixos; [ profiles.laptop users.riad boot.systemd-boot hardware.thinkpad-x13-yoga ];
     system.stateVersion = "26.11";
   };
 }
