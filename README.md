@@ -11,7 +11,7 @@ users/           system users; users/<name>/home.nix is their home-manager confi
 modules/         one small NixOS aspect per thing (docker, firewall, gc, secrets, desktop/*, hardware/*, boot/*)
 home/            small home-manager aspects (cli, dev, neovim, wayland, desktop, dotfiles) + defaults/
 wrappers/        programs bundled with their config (nvim, zsh, tmux, git, btop) + defaults/
-disko/           disk layouts, functions of { device, swapSize }
+disko/           disk-layout aspects; a host picks one and sets my.disk.device
 installer/       live-ISO base + the offline install-<host> script
 secrets/         sops-encrypted YAML; .sops.yaml lists recipients
 ```
@@ -41,7 +41,7 @@ Every `.nix` file is a flake-parts module that *registers* an aspect under a nam
 }
 ```
 
-- Names: `modules/desktop/hyprland.nix` → `mods.nixos.desktop-hyprland`; `home/cli.nix` → `mods.homeManager.cli`; `profiles/server.nix` → `profile-server`; `users/riad.nix` → `user-riad`; a host registers `host-<name>`, `host-<name>-hardware`, `host-<name>-disk`.
+- Names: `modules/desktop/hyprland.nix` → `mods.nixos.desktop-hyprland`; `home/cli.nix` → `mods.homeManager.cli`; `profiles/server.nix` → `profile-server`; `users/riad.nix` → `user-riad`; `disko/server-btrfs.nix` → `disko-server-btrfs`; a host registers `host-<name>`, `host-<name>-hardware`, `host-<name>-disk`. `wrappers/<name>.nix` registers `flake.wrappers.<name>` (also a flake package). Files starting with `_` are helpers, not modules.
 - `flake/hosts.nix` finds every `hosts/<provider>/<name>/`, sets `networking.hostName = <name>` and `$CLOUD_PROVIDER = <provider>`, and builds `nixosConfigurations.<name>` from the three host aspects.
 - A file may carry both halves of a feature (see `modules/desktop/hyprland.nix`: NixOS part + home-manager part).
 - Profiles import aspects and add home-manager aspects through `home-manager.sharedModules`.
@@ -65,7 +65,7 @@ Servers (`profiles/server.nix`) pull `main` daily (`my.autoUpdate`), so **pushin
 
 ## Installing a machine
 
-1. Create `hosts/<provider>/<name>/` with `default.nix`, `hardware.nix` (from `nixos-generate-config --no-filesystems --show-hardware-config`) and `disko.nix` (a call to one of `disko/*.nix`).
+1. Create `hosts/<provider>/<name>/` with `default.nix`, `hardware.nix` (from `nixos-generate-config --no-filesystems --show-hardware-config`) and `disko.nix` (imports one `disko-*` aspect and sets `my.disk.device`).
 
 1. Either build the image — `just iso <name>`, `dd` it to USB, boot, run `install-<name>` (offline; runs disko + nixos-install from the closure on the image) — or use the stock installer:
 
