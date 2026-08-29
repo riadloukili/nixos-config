@@ -1,13 +1,14 @@
 # Live / installer images:
 #   nix build .#iso-<host>   that host's config as a live system + `install-<host>`
-#                            (offline: runs its disko script, then nixos-install
-#                            from the closure on the image)
+#                            (offline: its disko script, then nixos-install from
+#                            the closure on the image)
 #   nix build .#iso-server   generic live image with the server profile
 #   nix build .#iso-desktop  generic live image with the desktop profile
 {
   config,
   inputs,
   lib,
+  mods,
   ...
 }:
 let
@@ -18,7 +19,7 @@ let
         inherit inputs;
       };
       modules = modules ++ [
-        ../installer/base.nix
+        mods.nixos.installer-base
         { my.installer.name = name; }
       ];
     }).config.system.build.isoImage;
@@ -29,11 +30,10 @@ let
       config.flake.lib.baseModules {
         name = "nixos-${profile}";
         provider = "live";
-        dir = ../hosts;
       }
       ++ [
-        ../profiles/${profile}.nix
-        ../users/riad.nix
+        mods.nixos."profile-${profile}"
+        mods.nixos.user-riad
       ]
     )
   );
@@ -48,8 +48,8 @@ let
         mkIso host.name (
           config.flake.lib.baseModules host
           ++ [
-            (host.dir + "/default.nix")
-            ../installer/target.nix
+            mods.nixos."host-${host.name}"
+            mods.nixos.installer-target
             {
               my.installer.target = {
                 toplevel = target.config.system.build.toplevel;
@@ -64,7 +64,5 @@ let
   );
 in
 {
-  perSystem = {
-    packages = lib.mapAttrs' (n: v: lib.nameValuePair "iso-${n}" v) (generic // perHost);
-  };
+  perSystem.packages = lib.mapAttrs' (n: v: lib.nameValuePair "iso-${n}" v) (generic // perHost);
 }

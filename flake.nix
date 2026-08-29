@@ -1,8 +1,9 @@
 {
   description = "Riad's NixOS machines";
 
-  # Inputs only. Outputs are assembled by the flake-parts modules in ./flake
-  # (auto-imported by import-tree); hosts live in ./hosts.
+  # Inputs only. Every .nix file in the directories below is a flake-parts
+  # module (auto-imported by import-tree): ./flake builds the outputs, the
+  # others register NixOS / home-manager aspects (see flake/mods.nix).
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager = {
@@ -37,5 +38,17 @@
     };
   };
 
-  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./flake);
+  outputs =
+    inputs:
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } (
+      inputs.import-tree [
+        ./flake
+        ./modules
+        ./profiles
+        ./users
+        ./home
+        ./hosts
+        ./installer
+      ]
+    );
 }

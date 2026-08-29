@@ -1,25 +1,28 @@
-# Discovers hosts/<provider>/<name>/ and builds nixosConfigurations.<name>.
+# hosts/<provider>/<name>/ → nixosConfigurations.<name>.
 #
-# A host directory contains:
-#   default.nix   the machine: imports profiles + users, sets options
-#   hardware.nix  generated hardware config (kernel modules, cpu, ...)
-#   disko.nix     disk layout (a call to one of ../disko/*.nix)
-# hardware.nix and disko.nix are added here, not by default.nix, so the
-# live ISO (flake/iso.nix) can reuse default.nix without them.
-{ inputs, lib, ... }:
+# A host directory registers three aspects (see hosts/home/eleuthia):
+#   default.nix   host-<name>            the machine: profiles + users + options
+#   hardware.nix  host-<name>-hardware   generated hardware config
+#   disko.nix     host-<name>-disk       disk layout (a call to ../disko/*.nix)
+# The live ISO (flake/iso.nix) reuses host-<name> without the other two.
+{
+  inputs,
+  lib,
+  mods,
+  ...
+}:
 let
   hostsDir = ../hosts;
   isDir = _: type: type == "directory";
   providers = lib.attrNames (lib.filterAttrs isDir (builtins.readDir hostsDir));
   hosts = lib.concatMap (
     provider:
-    map (name: {
-      inherit name provider;
-      dir = hostsDir + "/${provider}/${name}";
-    }) (lib.attrNames (lib.filterAttrs isDir (builtins.readDir (hostsDir + "/${provider}"))))
+    map (name: { inherit name provider; }) (
+      lib.attrNames (lib.filterAttrs isDir (builtins.readDir (hostsDir + "/${provider}")))
+    )
   ) providers;
 
-  # Modules every host gets, independent of profiles.
+  # What every host (and live image) gets regardless of profile.
   baseModules = host: [
     inputs.home-manager.nixosModules.home-manager
     inputs.disko.nixosModules.disko
@@ -28,7 +31,6 @@ let
       networking.hostName = host.name;
       nixpkgs.hostPlatform = "x86_64-linux";
       environment.variables.CLOUD_PROVIDER = host.provider;
-      _module.args.hostDir = host.dir;
     }
   ];
 
@@ -39,18 +41,17 @@ let
         inherit inputs;
       };
       modules = baseModules host ++ [
-        (host.dir + "/default.nix")
-        (host.dir + "/hardware.nix")
-        (host.dir + "/disko.nix")
+        mods.nixos."host-${host.name}"
+        mods.nixos."host-${host.name}-hardware"
+        mods.nixos."host-${host.name}-disk"
       ];
     };
 in
 {
   flake = {
     nixosConfigurations = lib.listToAttrs (map (h: lib.nameValuePair h.name (mkHost h)) hosts);
-    # Used by flake/iso.nix.
     lib = {
       inherit hosts baseModules;
-    };
+    }; # used by flake/iso.nix
   };
 }
