@@ -1,5 +1,0 @@
-# statix lints. repeated_keys (W20) is disabled on purpose: files declare
-# several `flake.modules.<class>.<name>` aspects side by side.
-disabled = ["repeated_keys"]
-nix_version = "2.4"
-ignore = [".direnv"]

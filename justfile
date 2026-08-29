@@ -1,4 +1,4 @@
-# Task runner. `just` lists everything; run inside `nix develop` / direnv.
+# Day-to-day tasks. `just` lists them; run inside `nix develop` / direnv.
 
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
@@ -9,7 +9,7 @@ host := `hostname`
 default:
     @just --list --unsorted
 
-# Build a host closure without activating (default: this machine)
+# Build a host without activating (default: this machine)
 build target=host:
     nh os build {{ flake }} -H {{ target }}
 
@@ -21,17 +21,9 @@ switch:
 boot:
     nh os boot {{ flake }} -H {{ host }}
 
-# Build locally, then activate on a remote host over SSH (ad-hoc, no rollback)
+# Build here, activate on a remote host over SSH
 push target:
     nh os switch {{ flake }} -H {{ target }} --target-host riad@{{ target }}
-
-# Deploy with deploy-rs (magic rollback); `just deploy` deploys every node
-deploy target="":
-    deploy --skip-checks {{ flake }}{{ if target != "" { "#" + target } else { "" } }}
-
-# Show what a deploy would change on a host
-deploy-dry target:
-    deploy --skip-checks --dry-activate {{ flake }}#{{ target }}
 
 # Build an installer image: server | desktop | <host>
 iso target:
@@ -43,7 +35,7 @@ vm target:
     nix build {{ flake }}#nixosConfigurations.{{ target }}.config.system.build.vm -L
     ./result/bin/run-{{ target }}-vm
 
-# Evaluate everything (formatting, lints, hooks, hosts, deploy schema)
+# Formatting, lints, hooks and every host
 check:
     nix flake check {{ flake }} -L
 
@@ -55,7 +47,7 @@ fmt:
 update input="":
     nix flake update {{ input }} --flake {{ flake }}
 
-# Show the closure diff between the running system and a fresh build
+# Closure diff between the running system and a fresh build
 diff target=host:
     nh os build {{ flake }} -H {{ target }} --out-link /tmp/nixos-config-{{ target }}
     nvd diff /run/current-system /tmp/nixos-config-{{ target }}
@@ -74,13 +66,13 @@ sops-add-host name address:
     for f in secrets/*.yaml; do
       [ -f "$f" ] && sops updatekeys --yes "$f" || true
     done
-    echo "Add '{{ name }}' to the creation_rules in .sops.yaml if it is not covered yet."
+    echo "Add '*{{ name }}' to the creation_rules in .sops.yaml if it is not covered yet."
 
 # Edit (or create) an encrypted secrets file
 secrets-edit file="common":
     sops secrets/{{ file }}.yaml
 
-# Print the age recipient for a hashed password prompt
+# Hash a password for secrets/common.yaml (riad-password)
 mkpasswd:
     mkpasswd -m yescrypt
 

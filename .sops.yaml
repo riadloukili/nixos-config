@@ -22,8 +22,3 @@ creation_rules:
     key_groups:
       - age:
           - *riad
-  # Dev-shell secrets, read by secretspec (secretspec.toml); admin only.
-  - path_regex: secrets/devshell\.yaml$
-    key_groups:
-      - age:
-          - *riad

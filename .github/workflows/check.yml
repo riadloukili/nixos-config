@@ -21,9 +21,8 @@ jobs:
       fail-fast: false
       matrix:
         target:
-          - nixosConfigurations.apollo.config.system.build.toplevel
-          - nixosConfigurations.eleuthia.config.system.build.toplevel
           - packages.x86_64-linux.iso-server
+          - packages.x86_64-linux.iso-eleuthia
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v16
