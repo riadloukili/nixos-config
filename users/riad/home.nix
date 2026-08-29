@@ -28,13 +28,23 @@ in
         ripgrep
         fd
         bat
-        eza
+        lsd
         jq
         yq-go
         dust
         duf
+        ncdu
         fastfetch
+        pokemon-colorscripts
         btop
+        yazi
+        ueberzugpp
+        cava
+        bc
+        figlet
+        inotify-tools
+        imagemagick
+        ffmpeg
         # editors / multiplexer (config from dotfiles)
         neovim
         tmux
@@ -42,9 +52,20 @@ in
         lazydocker
         nixd
         nixfmt
+        sops
+        ssh-to-age
+        git-lfs
+        mkcert
+        ast-grep
+        mermaid-cli
+        awscli2
+        azure-cli
+        claude-code
+        codex
+        ccusage
       ]
       ++ lib.optionals desktop [
-        # dev toolchains: workstations only
+        # dev toolchains and apps: workstations only
         gh
         glab
         just
@@ -53,6 +74,13 @@ in
         uv
         go
         rustup
+        brave
+        discord
+        vlc
+        (mpv.override { scripts = [ mpvScripts.mpris ]; })
+        freecad
+        xournalpp
+        remmina
       ];
 
     sessionVariables = {
@@ -62,10 +90,6 @@ in
     shellAliases = {
       vi = "nvim";
       vim = "nvim";
-      ls = "eza --icons";
-      ll = "eza -l --icons";
-      la = "eza -la --icons";
-      cat = "bat --paging=never";
       rebuild = "nh os switch";
       # Derive my sops age identity from ~/.ssh/id_ed25519 (asks for the passphrase).
       sops-identity = "mkdir -p -m 700 ~/.config/sops/age && read -rs 'SSH_TO_AGE_PASSPHRASE?SSH key passphrase: ' && echo && SSH_TO_AGE_PASSPHRASE=$SSH_TO_AGE_PASSPHRASE ssh-to-age -private-key -i ~/.ssh/id_ed25519 -o ~/.config/sops/age/keys.txt && chmod 600 ~/.config/sops/age/keys.txt && echo 'age identity written to ~/.config/sops/age/keys.txt'";
@@ -145,29 +169,7 @@ in
     };
   };
 
-  # Desktop theming.
-  home.pointerCursor = lib.mkIf desktop {
-    enable = true;
-    gtk.enable = true;
-    package = pkgs.bibata-cursors;
-    name = "Bibata-Modern-Classic";
-    size = 24;
-  };
-  gtk = lib.mkIf desktop {
-    enable = true;
-    theme = {
-      package = pkgs.adw-gtk3;
-      name = "adw-gtk3-dark";
-    };
-    iconTheme = {
-      package = pkgs.papirus-icon-theme;
-      name = "Papirus-Dark";
-    };
-  };
-  qt = lib.mkIf desktop {
-    enable = true;
-    platformTheme.name = "gtk3";
-  };
+  # GTK/Qt theming comes from the dotfiles (gtk-3.0, gtk-4.0, qt5ct, qt6ct, Kvantum).
   xdg = {
     enable = true;
     userDirs.enable = desktop;
