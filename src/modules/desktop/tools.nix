@@ -1,6 +1,6 @@
 # The programs a Wayland desktop needs to function (bar, launcher,
-# notifications, lock/idle, terminal, screenshots, clipboard, controls, files,
-# browser). Their configs come from each user's dotfiles.
+# notifications, lock/idle, polkit, terminal, screenshots, clipboard, controls,
+# wallpaper/theming, files, monitors). Their configs come from each user's dotfiles.
 {
   flake.modules.nixos."desktop/tools" =
     { config, pkgs, ... }:
@@ -17,8 +17,10 @@
         swaynotificationcenter
         rofi
         wlogout
-        hyprpaper
+        hyprpolkitagent
         kitty
+        awww
+        wallust
         grim
         slurp
         swappy
@@ -31,13 +33,20 @@
         networkmanagerapplet
         nwg-displays
         nwg-look
+        shikane
+        wev
+        yad
+        loupe
+        file-roller
+        gnome-system-monitor
         xarchiver
         qalculate-gtk
-        brave
-        mpv
         imv
         zathura
         xdg-utils
+        libsForQt5.qt5ct
+        qt6Packages.qt6ct
+        kdePackages.qtstyleplugin-kvantum
       ];
     };
 }
