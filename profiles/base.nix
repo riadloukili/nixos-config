@@ -8,10 +8,10 @@
       nh
       ssh
       shell
-      gc
+      sudo
+      packages
       home-manager
       secrets
     ];
-    home-manager.sharedModules = [ mods.homeManager.dotfiles ];
   };
 }

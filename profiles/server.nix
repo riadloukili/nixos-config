@@ -5,7 +5,6 @@
     imports = with mods.nixos; [
       profiles.base
       docker
-      firewall
       auto-update
       tailscale
     ];

@@ -10,7 +10,7 @@
 
     system.stateVersion = "26.11";
 
-    my.firewall.tcp = [
+    networking.firewall.allowedTCPPorts = [
       80
       443
     ];

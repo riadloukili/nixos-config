@@ -1,4 +1,4 @@
-# Docker (rootless by default) with compose. Also touches networking.firewall.
+# Docker, rootless by default, with compose.
 {
   flake.modules.nixos."docker" =
     {
@@ -9,12 +9,12 @@
     }:
     let
       cfg = config.my.docker;
+      # Explicit resolvers: containers must not inherit a host-only resolver.
       daemonSettings = {
-        iptables = true;
-        ip-forward = true;
-      }
-      // lib.optionalAttrs (cfg.dns != [ ]) {
-        inherit (cfg) dns;
+        dns = [
+          "1.1.1.1"
+          "1.0.0.1"
+        ];
         dns-opts = [ "ndots:0" ];
         dns-search = [ ];
       };
@@ -27,26 +27,14 @@
         rootless = lib.mkOption {
           type = lib.types.bool;
           default = true;
-        };
-        privilegedPorts = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = "Allow rootless containers to bind ports below 1024.";
-        };
-        dns = lib.mkOption {
-          type = lib.types.listOf lib.types.str;
-          default = [
-            "1.1.1.1"
-            "1.0.0.1"
-          ];
-          description = "DNS servers for containers; empty keeps Docker's default.";
+          description = "Run the daemon as the user (rootless) instead of as root.";
         };
       };
 
       config = lib.mkIf cfg.enable {
         virtualisation.docker = {
           enable = !cfg.rootless;
-          daemon.settings = lib.mkIf (!cfg.rootless) daemonSettings;
+          daemon.settings = daemonSettings;
           rootless = {
             enable = cfg.rootless;
             setSocketVariable = true;
@@ -56,22 +44,22 @@
 
         environment.systemPackages = [ pkgs.docker-compose ] ++ lib.optional cfg.rootless pkgs.slirp4netns;
 
-        security.wrappers.docker-rootlesskit = lib.mkIf (cfg.rootless && cfg.privilegedPorts) {
+        # Rootless containers may bind ports below 1024 (e.g. a reverse proxy).
+        security.wrappers.docker-rootlesskit = lib.mkIf cfg.rootless {
           owner = "root";
           group = "root";
           capabilities = "cap_net_bind_service+ep";
           source = "${pkgs.rootlesskit}/bin/rootlesskit";
         };
 
-        boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
-
-        networking.firewall = {
+        # Rootful docker manages bridges on the host; trust them so containers
+        # can reach host services, and relax reverse-path filtering for NAT.
+        networking.firewall = lib.mkIf (!cfg.rootless) {
           trustedInterfaces = [
             "docker0"
-            "br-*"
+            "br+"
           ];
-          checkReversePath = lib.mkDefault "loose";
-          allowedUDPPorts = lib.mkIf (cfg.dns != [ ]) [ 53 ];
+          checkReversePath = "loose";
         };
       };
     };
