@@ -3,7 +3,7 @@
 # layer (checkout override, else home/defaults/hypr).
 { mods, ... }:
 {
-  flake.modules.nixos.desktop-hyprland = {
+  flake.modules.nixos."desktop/hyprland" = {
     programs.hyprland = {
       enable = true;
       withUWSM = true;

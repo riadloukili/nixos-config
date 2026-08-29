@@ -1,8 +1,8 @@
 # Cloud VM (e.g. Hetzner, legacy BIOS): GPT with BIOS boot partition + ESP so
-# GRUB works either way, ext4 root, swap partition. Pair with boot-grub.
+# GRUB works either way, ext4 root, swap partition. Pair with boot.grub.
 # Host sets my.disk.device (and optionally my.disk.swapSize).
 {
-  flake.modules.nixos.disko-cloud-bios =
+  flake.modules.nixos."disko/cloud-bios" =
     { config, lib, ... }:
     let
       cfg = config.my.disk;

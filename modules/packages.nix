@@ -1,6 +1,6 @@
 # The minimal system-wide toolset; user tools live in home/.
 {
-  flake.modules.nixos.packages =
+  flake.modules.nixos."packages" =
     { pkgs, ... }:
     {
       environment.systemPackages = with pkgs; [

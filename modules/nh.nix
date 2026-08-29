@@ -1,7 +1,7 @@
 # nh (nix helper) + where this machine's configuration comes from.
 # `my.repo.uri` is also the pull target of modules/auto-update.nix.
 {
-  flake.modules.nixos.nh =
+  flake.modules.nixos."nh" =
     { config, lib, ... }:
     {
       options.my.repo = {

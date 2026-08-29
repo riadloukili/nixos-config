@@ -1,9 +1,9 @@
 # Headless machine (homelab or cloud): runs containers, updates itself from main.
 { mods, ... }:
 {
-  flake.modules.nixos.profile-server = {
+  flake.modules.nixos."profiles/server" = {
     imports = with mods.nixos; [
-      profile-base
+      profiles.base
       docker
       firewall
       auto-update

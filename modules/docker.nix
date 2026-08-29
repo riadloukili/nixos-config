@@ -1,6 +1,6 @@
 # Docker (rootless by default) with compose. Also touches networking.firewall.
 {
-  flake.modules.nixos.docker =
+  flake.modules.nixos."docker" =
     {
       config,
       lib,

@@ -1,6 +1,6 @@
 # Desktop session basics: theming, cursor, a few apps, xdg dirs.
 {
-  flake.modules.homeManager.desktop =
+  flake.modules.homeManager."desktop" =
     { pkgs, ... }:
     {
       home.packages = with pkgs; [

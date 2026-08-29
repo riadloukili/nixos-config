@@ -1,6 +1,6 @@
 # Firewall with explicit port lists. docker.nix, ssh.nix and tailscale.nix add their own rules.
 {
-  flake.modules.nixos.firewall =
+  flake.modules.nixos."firewall" =
     { config, lib, ... }:
     let
       cfg = config.my.firewall;

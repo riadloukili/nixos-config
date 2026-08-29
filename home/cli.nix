@@ -1,6 +1,6 @@
 # Everyday command-line tools.
 {
-  flake.modules.homeManager.cli =
+  flake.modules.homeManager."cli" =
     { pkgs, ... }:
     {
       home.packages = with pkgs; [

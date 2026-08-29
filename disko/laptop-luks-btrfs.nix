@@ -1,7 +1,7 @@
 # Laptop: GPT, 1G ESP, LUKS2 (passphrase at boot) -> btrfs subvolumes, swapfile.
 # Host sets my.disk.device (and optionally my.disk.swapSize).
 {
-  flake.modules.nixos.disko-laptop-luks-btrfs =
+  flake.modules.nixos."disko/laptop-luks-btrfs" =
     { config, lib, ... }:
     let
       cfg = config.my.disk;

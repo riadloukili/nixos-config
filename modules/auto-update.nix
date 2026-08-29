@@ -1,6 +1,6 @@
 # Pull-based updates: rebuild daily from `my.repo.uri` (pushing to main deploys).
 {
-  flake.modules.nixos.auto-update =
+  flake.modules.nixos."auto-update" =
     { config, lib, ... }:
     let
       cfg = config.my.autoUpdate;

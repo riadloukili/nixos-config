@@ -1,7 +1,7 @@
 # Compositor-agnostic Wayland stack. Configs are dotfiles entries
 # (home/dotfiles.nix): checkout override, else home/defaults/<name>.
 {
-  flake.modules.homeManager.wayland =
+  flake.modules.homeManager."wayland" =
     { pkgs, ... }:
     {
       home.packages = with pkgs; [

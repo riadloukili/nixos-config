@@ -2,7 +2,7 @@
 # confirmation, wipes the declared disks) then nixos-install from the closure
 # that is already on the image — no network needed.
 {
-  flake.modules.nixos.installer-target =
+  flake.modules.nixos."installer/target" =
     {
       config,
       lib,

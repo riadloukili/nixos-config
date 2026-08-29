@@ -1,6 +1,6 @@
 # User-level secrets (secrets/user.yaml), decrypted with the user's own age key.
 {
-  flake.modules.homeManager.sops =
+  flake.modules.homeManager."sops" =
     { config, lib, ... }:
     let
       file = ../secrets/user.yaml;

@@ -1,6 +1,6 @@
 # 2-in-1 / touchscreen: rotation sensor, on-screen keyboard.
 {
-  flake.modules.nixos.hardware-convertible =
+  flake.modules.nixos."hardware/convertible" =
     { pkgs, ... }:
     {
       hardware.sensor.iio.enable = true;

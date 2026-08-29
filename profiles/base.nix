@@ -1,7 +1,7 @@
 # Every machine.
 { mods, ... }:
 {
-  flake.modules.nixos.profile-base = {
+  flake.modules.nixos."profiles/base" = {
     imports = with mods.nixos; [
       nix
       locale

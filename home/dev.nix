@@ -1,6 +1,6 @@
 # Development tooling for workstations.
 {
-  flake.modules.homeManager.dev =
+  flake.modules.homeManager."dev" =
     { pkgs, ... }:
     {
       home.packages = with pkgs; [

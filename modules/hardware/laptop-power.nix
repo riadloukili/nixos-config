@@ -1,6 +1,6 @@
 # Battery and lid behaviour.
 {
-  flake.modules.nixos.hardware-laptop-power = {
+  flake.modules.nixos."hardware/laptop-power" = {
     services = {
       power-profiles-daemon.enable = true;
       upower.enable = true;

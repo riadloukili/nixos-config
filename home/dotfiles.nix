@@ -4,7 +4,7 @@
 #      e.g. home/defaults/hypr), declared by the module installing the program.
 # Any dotfiles repo works, including none, or one that overrides a few entries.
 {
-  flake.modules.homeManager.dotfiles =
+  flake.modules.homeManager."dotfiles" =
     {
       config,
       lib,

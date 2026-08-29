@@ -2,7 +2,7 @@
 # --show-hardware-config` on the machine (2026-08-29). Filesystems come from
 # disko.nix; laptop/Intel/ThinkPad specifics from modules/hardware/*.
 {
-  flake.modules.nixos.host-eleuthia-hardware =
+  flake.modules.nixos."hosts/eleuthia/hardware" =
     {
       config,
       lib,

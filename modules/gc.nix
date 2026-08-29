@@ -1,7 +1,7 @@
 # Garbage collection that keeps the newest N generations *and* only deletes
 # older ones past an age threshold, then collects garbage and optimises.
 {
-  flake.modules.nixos.gc =
+  flake.modules.nixos."gc" =
     {
       config,
       lib,

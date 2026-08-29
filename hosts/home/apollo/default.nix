@@ -1,11 +1,11 @@
 # apollo — homelab server.
 { mods, ... }:
 {
-  flake.modules.nixos.host-apollo = {
+  flake.modules.nixos."hosts/apollo/default" = {
     imports = with mods.nixos; [
-      profile-server
-      user-riad
-      boot-systemd-boot
+      profiles.server
+      users.riad
+      boot.systemd-boot
     ];
 
     system.stateVersion = "26.11";

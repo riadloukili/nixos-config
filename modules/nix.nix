@@ -1,6 +1,6 @@
 # Nix daemon settings and nixpkgs policy.
 {
-  flake.modules.nixos.nix =
+  flake.modules.nixos."nix" =
     { inputs, lib, ... }:
     {
       nix = {

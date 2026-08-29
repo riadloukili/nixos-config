@@ -1,6 +1,6 @@
 # greetd + tuigreet: lists every installed Wayland session, remembers the last choice.
 {
-  flake.modules.nixos.desktop-greetd =
+  flake.modules.nixos."desktop/greetd" =
     { config, pkgs, ... }:
     {
       services.greetd = {

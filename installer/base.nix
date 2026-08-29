@@ -1,7 +1,7 @@
 # Turns a host/profile configuration into a live ISO. Login: riad / nixos
 # (SSH keys work too). The repo is available at /etc/nixos-config.
 {
-  flake.modules.nixos.installer-base =
+  flake.modules.nixos."installer/base" =
     {
       config,
       options,

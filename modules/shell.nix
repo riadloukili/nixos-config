@@ -1,6 +1,6 @@
 # Login shell: the wrapped zsh (wrappers/zsh.nix) for every user; passwordless sudo for wheel.
 {
-  flake.modules.nixos.shell =
+  flake.modules.nixos."shell" =
     { inputs, pkgs, ... }:
     let
       zsh = inputs.self.wrappers.zsh.wrap { inherit pkgs; };

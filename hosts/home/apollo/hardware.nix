@@ -1,7 +1,7 @@
 # apollo hardware (Intel, NVMe). Regenerate with
 # `nixos-generate-config --no-filesystems --show-hardware-config` after install.
 {
-  flake.modules.nixos.host-apollo-hardware =
+  flake.modules.nixos."hosts/apollo/hardware" =
     {
       config,
       lib,

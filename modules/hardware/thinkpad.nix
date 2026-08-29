@@ -1,6 +1,6 @@
 # Lenovo ThinkPad common bits.
 {
-  flake.modules.nixos.hardware-thinkpad =
+  flake.modules.nixos."hardware/thinkpad" =
     { inputs, ... }:
     {
       imports = with inputs.nixos-hardware.nixosModules; [

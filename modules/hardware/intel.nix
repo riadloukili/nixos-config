@@ -1,6 +1,6 @@
 # Intel CPU + integrated GPU.
 {
-  flake.modules.nixos.hardware-intel =
+  flake.modules.nixos."hardware/intel" =
     { inputs, pkgs, ... }:
     {
       imports = with inputs.nixos-hardware.nixosModules; [

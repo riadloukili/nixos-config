@@ -1,7 +1,7 @@
-# System user + home-manager entry point (users/riad/home.nix → homeManager.user-riad).
+# System user + home-manager entry point (users/riad/home.nix → homeManager.users.riad).
 { mods, ... }:
 {
-  flake.modules.nixos.user-riad = {
+  flake.modules.nixos."users/riad" = {
     users.users.riad = {
       isNormalUser = true;
       description = "Riad Loukili";
@@ -19,6 +19,6 @@
       # Password: modules/secrets.nix (riad-password) once enrolled; key-only before.
     };
 
-    home-manager.users.riad = mods.homeManager.user-riad;
+    home-manager.users.riad = mods.homeManager.users.riad;
   };
 }

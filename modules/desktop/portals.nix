@@ -1,6 +1,6 @@
 # XDG desktop portals (Hyprland adds its own on top).
 {
-  flake.modules.nixos.desktop-portals =
+  flake.modules.nixos."desktop/portals" =
     { pkgs, ... }:
     {
       xdg.portal = {

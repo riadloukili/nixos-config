@@ -1,7 +1,7 @@
 # Headless server: GPT, 1G ESP, unencrypted btrfs subvolumes (unattended reboots), swapfile.
 # Host sets my.disk.device (and optionally my.disk.swapSize).
 {
-  flake.modules.nixos.disko-server-btrfs =
+  flake.modules.nixos."disko/server-btrfs" =
     { config, lib, ... }:
     let
       cfg = config.my.disk;

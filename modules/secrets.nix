@@ -5,7 +5,7 @@
 # Secrets in common.yaml: riad-password (mkpasswd -m yescrypt hash),
 # tailscale-auth-key (when tailscale is enabled).
 {
-  flake.modules.nixos.secrets =
+  flake.modules.nixos."secrets" =
     { config, lib, ... }:
     let
       common = ../secrets/common.yaml;
