@@ -1,4 +1,5 @@
-# Wayland desktop (Hyprland) for laptops and desktops.
+# Wayland desktop for laptops and desktops: Hyprland today, room for another
+# compositor (add a modules/desktop/<name>.nix and import it here).
 { mods, ... }:
 {
   flake.modules.nixos."profiles/desktop" = {
@@ -8,16 +9,11 @@
       docker
       desktop.greetd
       desktop.hyprland
+      desktop.tools
       desktop.audio
-      desktop.portals
       desktop.fonts
       desktop.keyboard
       desktop.network
-    ];
-    home-manager.sharedModules = with mods.homeManager; [
-      dev
-      wayland
-      desktop
     ];
   };
 }

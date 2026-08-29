@@ -8,17 +8,10 @@
       nh
       ssh
       shell
-      packages
       gc
       home-manager
       secrets
     ];
-    home-manager.sharedModules = with mods.homeManager; [
-      cli
-      neovim
-      wrappers
-      dotfiles
-      sops
-    ];
+    home-manager.sharedModules = [ mods.homeManager.dotfiles ];
   };
 }

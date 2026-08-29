@@ -1,18 +1,22 @@
-# Hyprland (session via uwsm). Both halves of the feature live here: the
-# NixOS part installs it, the home part hands ~/.config/hypr to the dotfiles
-# layer (checkout override, else home/defaults/hypr).
-{ mods, ... }:
+# Hyprland session (via uwsm) + portals. Config comes from the user's dotfiles.
+# A second compositor (e.g. mango) would be another file like this one,
+# imported by profiles/desktop.nix; greetd lists every installed session.
 {
-  flake.modules.nixos."desktop/hyprland" = {
-    programs.hyprland = {
-      enable = true;
-      withUWSM = true;
-      xwayland.enable = true;
+  flake.modules.nixos."desktop/hyprland" =
+    { pkgs, ... }:
+    {
+      programs.hyprland = {
+        enable = true;
+        withUWSM = true;
+        xwayland.enable = true;
+      };
+      xdg.portal = {
+        enable = true;
+        extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+        config.common.default = [
+          "hyprland"
+          "gtk"
+        ];
+      };
     };
-    home-manager.sharedModules = [ mods.homeManager.hyprland ];
-  };
-
-  flake.modules.homeManager.hyprland = {
-    my.dotfiles.entries.hypr.default = ../../home/defaults/hypr;
-  };
 }
