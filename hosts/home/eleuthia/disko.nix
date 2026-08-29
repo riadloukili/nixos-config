@@ -1,3 +1,4 @@
+# eleuthia disk: single NVMe, LUKS + btrfs.
 { mods, ... }:
 {
   flake.modules.nixos."hosts/eleuthia/disk" = {
