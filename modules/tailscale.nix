@@ -1,9 +1,12 @@
 # Tailscale (auth key comes from modules/secrets.nix when enrolled).
-{ lib, ... }:
 {
-  services.tailscale = {
-    enable = true;
-    useRoutingFeatures = lib.mkDefault "client";
-  };
-  networking.firewall.trustedInterfaces = [ "tailscale0" ];
+  flake.modules.nixos.tailscale =
+    { lib, ... }:
+    {
+      services.tailscale = {
+        enable = true;
+        useRoutingFeatures = lib.mkDefault "client";
+      };
+      networking.firewall.trustedInterfaces = [ "tailscale0" ];
+    };
 }

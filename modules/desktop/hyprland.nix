@@ -1,10 +1,18 @@
-# Hyprland (session via uwsm). The config is a dotfiles entry (home/dotfiles.nix):
-# ~/.config/hypr from the checkout, else home/defaults/hypr.
+# Hyprland (session via uwsm). Both halves of the feature live here: the
+# NixOS part installs it, the home part hands ~/.config/hypr to the dotfiles
+# layer (checkout override, else home/defaults/hypr).
+{ mods, ... }:
 {
-  programs.hyprland = {
-    enable = true;
-    withUWSM = true;
-    xwayland.enable = true;
+  flake.modules.nixos.desktop-hyprland = {
+    programs.hyprland = {
+      enable = true;
+      withUWSM = true;
+      xwayland.enable = true;
+    };
+    home-manager.sharedModules = [ mods.homeManager.hyprland ];
   };
-  home-manager.sharedModules = [ { my.dotfiles.entries.hypr.default = ../../home/defaults/hypr; } ];
+
+  flake.modules.homeManager.hyprland = {
+    my.dotfiles.entries.hypr.default = ../../home/defaults/hypr;
+  };
 }

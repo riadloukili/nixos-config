@@ -1,9 +1,11 @@
 # NetworkManager + Bluetooth for roaming machines.
 {
-  networking.networkmanager.enable = true;
-  hardware.bluetooth = {
-    enable = true;
-    powerOnBoot = true;
+  flake.modules.nixos.desktop-network = {
+    networking.networkmanager.enable = true;
+    hardware.bluetooth = {
+      enable = true;
+      powerOnBoot = true;
+    };
+    services.blueman.enable = true;
   };
-  services.blueman.enable = true;
 }
