@@ -22,6 +22,10 @@ creation_rules:
     key_groups:
       - age:
           - *user-riad
+  - path_regex: secrets/users/common\.yaml$
+    key_groups:
+      - age:
+          - *user-riad
   - path_regex: secrets/users/riad\.yaml$
     key_groups:
       - age:
