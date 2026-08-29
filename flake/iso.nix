@@ -19,7 +19,7 @@ let
         inherit inputs;
       };
       modules = modules ++ [
-        mods.nixos.installer-base
+        mods.nixos.installer.base
         { my.installer.name = name; }
       ];
     }).config.system.build.isoImage;
@@ -32,8 +32,8 @@ let
         provider = "live";
       }
       ++ [
-        mods.nixos."profile-${profile}"
-        mods.nixos.user-riad
+        mods.nixos.profiles.${profile}
+        mods.nixos.users.riad
       ]
     )
   );
@@ -48,8 +48,8 @@ let
         mkIso host.name (
           config.flake.lib.baseModules host
           ++ [
-            mods.nixos."host-${host.name}"
-            mods.nixos.installer-target
+            mods.nixos.hosts.${host.name}.default
+            mods.nixos.installer.target
             {
               my.installer.target = {
                 toplevel = target.config.system.build.toplevel;

@@ -1,10 +1,10 @@
 # hosts/<provider>/<name>/ → nixosConfigurations.<name>.
 #
 # A host directory registers three aspects (see hosts/home/eleuthia):
-#   default.nix   host-<name>            the machine: profiles + users + options
-#   hardware.nix  host-<name>-hardware   generated hardware config
-#   disko.nix     host-<name>-disk       disk layout (a call to ../disko/*.nix)
-# The live ISO (flake/iso.nix) reuses host-<name> without the other two.
+#   default.nix   hosts/<name>/default    the machine: profiles + users + options
+#   hardware.nix  hosts/<name>/hardware   generated hardware config
+#   disko.nix     hosts/<name>/disk       disk layout (imports a disko/* aspect)
+# The live ISO (flake/iso.nix) reuses hosts/<name>/default without the other two.
 {
   inputs,
   lib,
@@ -41,9 +41,9 @@ let
         inherit inputs;
       };
       modules = baseModules host ++ [
-        mods.nixos."host-${host.name}"
-        mods.nixos."host-${host.name}-hardware"
-        mods.nixos."host-${host.name}-disk"
+        mods.nixos.hosts.${host.name}.default
+        mods.nixos.hosts.${host.name}.hardware
+        mods.nixos.hosts.${host.name}.disk
       ];
     };
 in
