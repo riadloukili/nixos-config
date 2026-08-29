@@ -1,27 +1,22 @@
-# nh (nix helper) + where this machine's configuration comes from.
-# `my.repo.uri` is also the pull target of auto-update.nix.
+# nh (nix helper): rebuilds from `my.repo`, and its cleaner replaces nix.gc:
+# keep the newest 5 generations *and* everything younger than 7 days, for the
+# system and every user/home-manager profile.
+{ mods, ... }:
 {
   flake.modules.nixos."nh" =
     { config, lib, ... }:
     {
-      options.my.repo = {
-        uri = lib.mkOption {
-          type = lib.types.str;
-          default = "github:riadloukili/nixos-config";
-          description = "Flake URI machines pull their configuration from.";
-        };
-        localPath = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
-          default = null;
-          example = "/home/riad/personal/nixos-config";
-          description = "Local checkout to prefer for interactive rebuilds (nh), if any.";
-        };
-      };
+      imports = [ mods.nixos.repo ];
 
-      config.programs.nh = {
+      programs.nh = {
         enable = true;
-        flake = if config.my.repo.localPath != null then config.my.repo.localPath else config.my.repo.uri;
-        clean.enable = false;
+        flake = lib.defaultTo config.my.repo.uri config.my.repo.localPath;
+        clean = {
+          enable = true;
+          dates = "03:00";
+          extraArgs = "--keep 5 --keep-since 7d";
+        };
       };
+      nix.settings.auto-optimise-store = true;
     };
 }

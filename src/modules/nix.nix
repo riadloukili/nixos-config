@@ -1,7 +1,7 @@
 # Nix daemon settings and nixpkgs policy.
 {
   flake.modules.nixos."nix" =
-    { inputs, lib, ... }:
+    { inputs, ... }:
     {
       nix = {
         settings = {
@@ -19,10 +19,16 @@
           ];
           warn-dirty = false;
         };
-        # `nix run nixpkgs#foo` uses the same nixpkgs as the system.
-        registry.nixpkgs.flake = inputs.nixpkgs;
+        # `nix run nixpkgs#foo` uses the same nixpkgs as the system. A github ref,
+        # not `flake = inputs.nixpkgs`: that would make the whole nixpkgs source a
+        # runtime dependency of every system closure.
+        registry.nixpkgs.to = {
+          type = "github";
+          owner = "NixOS";
+          repo = "nixpkgs";
+          inherit (inputs.nixpkgs.sourceInfo) rev narHash lastModified;
+        };
         nixPath = [ "nixpkgs=flake:nixpkgs" ];
-        optimise.automatic = lib.mkDefault false; # done by modules/gc.nix
       };
 
       nixpkgs.config.allowUnfree = true;

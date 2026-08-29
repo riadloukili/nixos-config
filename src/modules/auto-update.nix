@@ -1,4 +1,5 @@
 # Pull-based updates: rebuild daily from `my.repo.uri` (pushing to main deploys).
+{ mods, ... }:
 {
   flake.modules.nixos."auto-update" =
     { config, lib, ... }:
@@ -6,13 +7,11 @@
       cfg = config.my.autoUpdate;
     in
     {
+      imports = [ mods.nixos.repo ];
+
       options.my.autoUpdate = {
         enable = lib.mkEnableOption "daily self-update from the repo" // {
           default = true;
-        };
-        time = lib.mkOption {
-          type = lib.types.str;
-          default = "02:00";
         };
         allowReboot = lib.mkOption {
           type = lib.types.bool;
@@ -29,7 +28,7 @@
             "--no-write-lock-file"
             "-L"
           ];
-          dates = "*-*-* ${cfg.time}:00";
+          dates = "02:00";
           randomizedDelaySec = "45min";
           inherit (cfg) allowReboot;
         };
