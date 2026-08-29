@@ -1,4 +1,4 @@
-# Tailscale (auth key comes from modules/secrets.nix when enrolled).
+# Tailscale (auth key comes from secrets.nix when enrolled).
 {
   flake.modules.nixos."tailscale" =
     { lib, ... }:

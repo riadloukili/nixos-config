@@ -1,5 +1,5 @@
 # US QWERTY + Canadian Multilingual, Alt+Shift to toggle. Hyprland reads its
-# own input settings from the dotfiles (kept in sync in home/defaults/hypr).
+# own input settings from the dotfiles hypr config; keep the two in sync.
 {
   flake.modules.nixos."desktop/keyboard" = {
     services.xserver.xkb = {

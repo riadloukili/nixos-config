@@ -1,4 +1,4 @@
-# GRUB for BIOS / hybrid machines (cloud VMs); pair with disko/cloud-bios.nix,
+# GRUB for BIOS / hybrid machines (cloud VMs); pair with src/disko/cloud-bios.nix,
 # which provides the BIOS boot partition. disko fills grub.devices.
 {
   flake.modules.nixos."boot/grub" = {

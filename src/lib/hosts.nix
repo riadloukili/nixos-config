@@ -1,7 +1,7 @@
 # Host discovery (plumbing, not an output). Provides the `hosts` argument:
 #   hosts.all          [ { name; provider; } ] for every hosts/<provider>/<name>/
 #   hosts.baseModules  host: [ modules every host and live image gets ]
-# Consumed by outputs/hosts.nix and outputs/iso.nix.
+# Consumed by src/outputs/hosts.nix and src/outputs/iso.nix.
 { inputs, lib, ... }:
 let
   hostsDir = ../../hosts;

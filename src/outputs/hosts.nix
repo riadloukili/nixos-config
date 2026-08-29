@@ -3,8 +3,8 @@
 # A host directory registers three aspects (see hosts/home/eleuthia):
 #   default.nix   hosts/<name>/default    the machine: profiles + users + options
 #   hardware.nix  hosts/<name>/hardware   generated hardware config
-#   disko.nix     hosts/<name>/disk       disk layout (imports a disko/* aspect)
-# The live ISO (outputs/iso.nix) reuses hosts/<name>/default without the other two.
+#   disko.nix     hosts/<name>/disk       disk layout (imports a src/disko/* aspect)
+# The live ISO (src/outputs/iso.nix) reuses hosts/<name>/default without the other two.
 {
   inputs,
   lib,

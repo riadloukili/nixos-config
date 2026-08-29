@@ -1,5 +1,6 @@
-# home-manager wiring (the NixOS module itself is added in flake/hosts.nix).
-# Profiles add HM modules through `home-manager.sharedModules`.
+# home-manager wiring (the NixOS module itself is added by src/lib/hosts.nix).
+# Shared HM aspects go through `home-manager.sharedModules` (profiles/base.nix
+# adds dotfiles); everything personal lives in users/<name>/home.nix.
 {
   flake.modules.nixos."home-manager" =
     { inputs, ... }:

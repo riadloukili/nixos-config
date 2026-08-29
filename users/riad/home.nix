@@ -1,6 +1,6 @@
 # riad's home-manager config: my shell, editor and tools. Program configs
 # (hypr, waybar, nvim, tmux, ...) come from ~/personal/dotfiles via
-# modules/dotfiles.nix; anything missing there uses the program's defaults.
+# src/modules/dotfiles.nix; anything missing there uses the program's defaults.
 {
   config,
   osConfig,

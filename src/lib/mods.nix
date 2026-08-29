@@ -1,12 +1,12 @@
-# The dendritic registry (flake-evaluation plumbing, not an output). Every file under modules/, profiles/, users/,
-# hosts/, disko/ and installer/ is a flake-parts module that registers
-# aspects named after their path:
+# The dendritic registry (flake-evaluation plumbing, not an output). Every
+# file under src/modules, src/disko, src/installer, profiles/, users/ and
+# hosts/ is a flake-parts module that registers aspects named after their path:
 #
-#   { flake.modules.nixos."hardware/thinkpad" = { ... }; }   # a NixOS module
-#   { flake.modules.homeManager.cli = { ... }; }             # a home-manager module
+#   { flake.modules.nixos."hardware/fingerprint" = { ... }; }   # a NixOS module
+#   { flake.modules.homeManager.dotfiles = { ... }; }           # a home-manager module
 #
 # They come back to every file as the `mods` argument, nested by path, so
-# composition is by name: `imports = with mods.nixos; [ profiles.base docker hardware.thinkpad ];`
+# composition is by name: `imports = with mods.nixos; [ profiles.base docker hardware.fingerprint ];`
 # Each aspect is wrapped with a `key`, which makes the module system
 # deduplicate it — importing the same aspect from several profiles is fine.
 {
