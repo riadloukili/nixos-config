@@ -1,6 +1,6 @@
 # nixos-config
 
-My NixOS machines: a homelab server, a laptop, and room for cloud VMs.
+My NixOS machines: a laptop today, with room for homelab servers and cloud VMs.
 
 ```text
 flake.nix        inputs only; import-tree loads every .nix file below as a flake-parts module
@@ -17,7 +17,7 @@ src/             what the above is built from — rarely edited
   outputs/       what the flake exports: hosts discovery, ISOs, devshell, lint/format/checks
 ```
 
-Hosts are named after GAIA's subfunctions (Horizon Forbidden West): `apollo`, `eleuthia`; free: `aether artemis demeter hades hephaestus minerva poseidon`.
+Hosts are named after GAIA's subfunctions (Horizon Forbidden West): `eleuthia`; free: `aether apollo artemis demeter hades hephaestus minerva poseidon`.
 
 ## How it fits together (dendritic)
 
@@ -56,8 +56,8 @@ Every `.nix` file is a flake-parts module that *registers* an aspect under a nam
 nix develop          # or direnv; installs the pre-commit hooks
 just                 # list tasks
 just switch          # rebuild this machine (nh)
-just build apollo    # build another host without activating
-just push apollo     # build here, activate over SSH
+just build <host>    # build another host without activating
+just push <host>     # build here, activate over SSH
 just iso eleuthia    # installer image → result-iso-eleuthia/iso/nixos-eleuthia.iso
 just check           # nix flake check: formatting, lints, hooks, every host
 just fmt
