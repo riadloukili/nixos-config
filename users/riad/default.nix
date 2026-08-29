@@ -1,10 +1,11 @@
 # riad: the system user. Everything else about me is in ./home.nix
 # (home-manager) and the dotfiles repo (github:riadloukili/dotfiles).
 #
-# My identity lives in secrets/users/riad.yaml: `password` (mkpasswd hash) and
-# `ssh-private-key`, my single SSH keypair. A host listed on that file gets
-# both at boot; home.nix installs the key as ~/.ssh/id_ed25519 and derives my
-# sops age identity from it.
+# My identity lives in secrets/users/riad.yaml: `password` (mkpasswd hash),
+# `ssh-private-key` and `ssh-public-key` — my single SSH keypair. A host listed
+# on that file gets them at boot; home.nix installs the pair in ~/.ssh.
+# (authorized_keys below must be known at evaluation time, so the public key
+# is repeated there.)
 { mods, ... }:
 {
   flake.modules.nixos."users/riad" =
@@ -41,6 +42,12 @@
           sopsFile = secrets;
           key = "ssh-private-key";
           owner = "riad";
+        };
+        riad-ssh-key-pub = {
+          sopsFile = secrets;
+          key = "ssh-public-key";
+          owner = "riad";
+          mode = "0444";
         };
       };
 
