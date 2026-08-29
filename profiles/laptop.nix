@@ -1,7 +1,10 @@
 # Desktop + laptop hardware behaviour.
+{ mods, ... }:
 {
-  imports = [
-    ./desktop.nix
-    ../modules/hardware/laptop-power.nix
-  ];
+  flake.modules.nixos.profile-laptop = {
+    imports = with mods.nixos; [
+      profile-desktop
+      hardware-laptop-power
+    ];
+  };
 }
