@@ -22,6 +22,6 @@ in
     };
 
   flake.modules.homeManager.home-hyprland = {
-    my.dotfiles.entries = [ "hypr" ];
+    my.dotfiles.entries.hypr.default = ./defaults/hypr;
   };
 }

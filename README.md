@@ -7,7 +7,7 @@ Flake-based NixOS configuration for my machines: headless homelab servers, cloud
 - **Disks**: [disko](https://github.com/nix-community/disko) layouts, reusable per machine class.
 - **Deploy**: [nh](https://github.com/nix-community/nh) locally, [deploy-rs](https://github.com/serokell/deploy-rs) push, `system.autoUpgrade` pull from `main`.
 - **Secrets**: [sops-nix](https://github.com/Mic92/sops-nix) for the system, [secretspec](https://secretspec.dev) for the dev shell.
-- **Programs**: [nix-wrapper-modules](https://github.com/BirdeeHub/nix-wrapper-modules) for nvim/zsh/tmux/git/btop (runnable anywhere with `nix run`); all configs live in the separate [dotfiles](https://github.com/riadloukili/dotfiles) checkout, hot-editable and shared with non-Nix machines.
+- **Programs**: [nix-wrapper-modules](https://github.com/BirdeeHub/nix-wrapper-modules) for nvim/zsh/tmux/git/btop (runnable anywhere with `nix run`). Every program has a default config in this repo; an optional dotfiles checkout overrides entries per program.
 - **Installers**: live ISOs per role or per host, with an offline `install-<host>` command.
 
 Hosts are named after GAIA's subfunctions (Horizon Forbidden West): `apollo` (homelab), `eleuthia` (laptop); free: `aether artemis demeter hades hephaestus minerva poseidon`.
@@ -85,7 +85,7 @@ Servers also pull `main` daily (`my.autoUpdate`), so **pushing to `main` deploys
 1. Boot it. You get the host's real desktop/server config live (user `riad`, password `nixos`, SSH keys work).
 1. `install-<name> --dry-run`, then `install-<name>`. It runs the disko script (asks for confirmation, prompts for the LUKS passphrase on encrypted layouts) and `nixos-install` from the closure on the image — no network needed.
 1. Reboot, then from this repo: `just sops-add-host <name> <ip>` and add the host to the relevant `creation_rules` in `.sops.yaml`; `just deploy <name>`.
-1. On desktops: `git clone https://github.com/riadloukili/dotfiles ~/personal/dotfiles` (hot-editable configs), `fprintd-enroll`.
+1. On desktops, optionally clone your dotfiles to `~/personal/dotfiles` (defaults are used for anything missing) and run `fprintd-enroll`.
 
 Generic images: `just iso server` / `just iso desktop`.
 
@@ -111,13 +111,17 @@ Use `github:riadloukili/nixos-config/<branch>#<name>` for an unmerged branch. `n
 
 Expected keys in `common.yaml`: `riad-password` (`mkpasswd -m yescrypt`), `tailscale-auth-key`.
 
-## Dotfiles
+## Dotfiles: defaults + optional overrides
 
-Hot-edited configs (`hypr`, `mango`, `waybar`, `rofi`, `swaync`, `wlogout`, `nvim`) live in the separate dotfiles repo and are symlinked from `~/personal/dotfiles` (`my.dotfiles`, `mkOutOfStoreSymlink`) — edit and reload, no rebuild. Set `my.dotfiles.mutable = false` with a store `source` to freeze them.
+Every program this config installs ships its own default config next to the aspect that installs it (`modules/desktop/defaults/{hypr,mango}`, `modules/home/defaults/{waybar,swaync,wlogout,rofi,nvim}`, `modules/wrappers/defaults/{tmux.conf,p10k.zsh}`). A dotfiles checkout is optional and only *overrides* what it contains:
 
-CLI programs are wrapper modules (`modules/wrappers`): `nix run github:riadloukili/nixos-config#nvim` (or `#tmux`, `#zsh`, `#git`, `#btop`) works on any machine with Nix. The *config* is not duplicated: `nvim` loads `<dotfiles>/nvim`, `tmux` sources `<dotfiles>/tmux/tmux.conf`, `zsh` sources `<dotfiles>/zsh/p10k.zsh` and `zsh/zshrc.local` — the same files a non-Nix machine uses directly. Nix only adds the binary, plugins and tools (LSPs, formatters). All lookups are guarded, so the wrappers still start when no checkout is present.
+- `my.dotfiles.path` (default `~/personal/dotfiles`) is checked per entry at activation: `~/.config/<name>` → `<checkout>/<name>` if it exists, otherwise → the store default. Missing checkout, or a checkout with only `hypr/`, both work.
+- `my.dotfiles.store` (or `flake.dotfiles.store` for the wrappers) can point at a flake input instead of a checkout: `inputs.dotfiles = { url = "github:<you>/dotfiles"; flake = false; }`.
+- Wrappers resolve the same way at start-up: `nvim` uses `<dotfiles>/nvim` else the LazyVim starter, `tmux` sources `<dotfiles>/tmux/tmux.conf` else the default, `zsh` sources `<dotfiles>/zsh/p10k.zsh` else the default and `zsh/zshrc.local` if present.
 
-`flake.dotfiles.runtime` (`$HOME/personal/dotfiles`) is where wrappers look at start-up. Once the dotfiles repo is on GitHub, add it as `inputs.dotfiles = { url = "github:riadloukili/dotfiles"; flake = false; }` and set `flake.dotfiles.store = inputs.dotfiles` in `modules/wrappers/dotfiles.nix` to have `nix run` bundle the config as well (then `nix flake update dotfiles` refreshes it).
+So `nix run github:riadloukili/nixos-config#nvim` (or `#tmux`, `#zsh`, `#git`, `#btop`) works on any machine with Nix, with or without your dotfiles cloned. Overrides in a checkout are hot-editable (symlinks into the checkout, no rebuild); changing a *default* is a rebuild.
+
+Layout of a dotfiles repo: top-level directories named after the entries (`hypr/`, `mango/`, `waybar/`, `rofi/`, `swaync/`, `wlogout/`, `nvim/`, `tmux/tmux.conf`, `zsh/p10k.zsh`, `zsh/zshrc.local`).
 
 ## Editor
 

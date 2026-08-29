@@ -30,12 +30,12 @@
         qalculate-gtk
       ];
 
-      my.dotfiles.entries = [
-        "waybar"
-        "rofi"
-        "swaync"
-        "wlogout"
-      ];
+      my.dotfiles.entries = {
+        waybar.default = ./defaults/waybar;
+        rofi.default = ./defaults/rofi;
+        swaync.default = ./defaults/swaync;
+        wlogout.default = ./defaults/wlogout;
+      };
 
       services.cliphist.enable = true;
     };

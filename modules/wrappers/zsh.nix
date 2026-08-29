@@ -1,11 +1,13 @@
 # zsh with completion, autosuggestions, syntax highlighting, a few oh-my-zsh
-# plugins and powerlevel10k. The prompt config (`<dotfiles>/zsh/p10k.zsh`)
-# and an optional `<dotfiles>/zsh/zshrc.local` come from the dotfiles
-# checkout so they are shared with non-Nix machines.
+# plugins and powerlevel10k. The prompt config comes from the dotfiles
+# checkout (`<dotfiles>/zsh/p10k.zsh`) when present, otherwise from
+# modules/wrappers/defaults/p10k.zsh; `<dotfiles>/zsh/zshrc.local` is
+# sourced if it exists.
 { config, ... }:
 let
   dot = config.flake.dotfiles;
   zshDir = if dot.store != null then "${dot.store}/zsh" else "${dot.runtime}/zsh";
+  defaultP10k = ./defaults/p10k.zsh;
 in
 {
   flake.wrappers.zsh =
@@ -48,7 +50,7 @@ in
         source ${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions/zsh-autosuggestions.zsh
         source ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
         source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
-        [[ -f "${zshDir}/p10k.zsh" ]] && source "${zshDir}/p10k.zsh"
+        if [[ -f "${zshDir}/p10k.zsh" ]]; then source "${zshDir}/p10k.zsh"; else source ${defaultP10k}; fi
 
         eval "$(zoxide init zsh)"
         source ${pkgs.fzf}/share/fzf/key-bindings.zsh

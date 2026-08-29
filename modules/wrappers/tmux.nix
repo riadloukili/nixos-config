@@ -1,9 +1,10 @@
-# tmux: settings come from `<dotfiles>/tmux/tmux.conf` (usable with TPM on
-# non-Nix machines); Nix adds the plugins so nothing is downloaded at runtime.
+# tmux: settings from the dotfiles checkout's `tmux/tmux.conf` when present,
+# otherwise modules/wrappers/defaults/tmux.conf (TPM-compatible for non-Nix
+# machines). Nix adds the plugins so nothing is downloaded at runtime.
 { config, ... }:
 let
   dot = config.flake.dotfiles;
-  conf = if dot.store != null then "${dot.store}/tmux/tmux.conf" else "${dot.runtime}/tmux/tmux.conf";
+  default = ./defaults/tmux.conf;
 in
 {
   flake.wrappers.tmux =
@@ -14,11 +15,18 @@ in
       prefix = "C-s";
       sourceSensible = true;
 
-      # Dotfiles first so plugin options (@minimal-tmux-*) are set before the
-      # plugins run; `-q` keeps tmux usable when the checkout is missing.
-      configBefore = ''
-        source-file -q "${conf}"
-      '';
+      # Config first so plugin options (@minimal-tmux-*) are set before the plugins run.
+      configBefore =
+        if dot.store != null then
+          ''source-file "${
+            if builtins.pathExists "${dot.store}/tmux/tmux.conf" then "${dot.store}/tmux/tmux.conf" else default
+          }"''
+        else
+          ''
+            if-shell 'test -f "${dot.runtime}/tmux/tmux.conf"' \
+              'source-file "${dot.runtime}/tmux/tmux.conf"' \
+              'source-file "${default}"'
+          '';
 
       plugins = [
         (pkgs.tmuxPlugins.mkTmuxPlugin {

@@ -1,12 +1,10 @@
-# Where wrappers find the hot-editable dotfiles checkout at *runtime*.
+# Where wrappers look for the dotfiles checkout at *runtime*. Each wrapper
+# falls back to a default shipped in modules/wrappers/defaults when the
+# checkout lacks the file, so no dotfiles repo is required.
 #
-# The dotfiles repo (github:riadloukili/dotfiles) is the single source of
-# truth for nvim, tmux and zsh config so the same files work on non-Nix
-# machines. Wrappers only add the binary, plugins and tools around it.
-#
-# Once the repo is published, add it as `inputs.dotfiles` (flake = false) and
-# set `flake.dotfiles.store = inputs.dotfiles` so `nix run` variants also
-# work on machines without a checkout.
+# To also bundle a dotfiles repo for `nix run` on machines without a
+# checkout, add it as `inputs.dotfiles` (flake = false) and set
+# `flake.dotfiles.store = inputs.dotfiles`.
 { lib, ... }:
 {
   options.flake.dotfiles = {

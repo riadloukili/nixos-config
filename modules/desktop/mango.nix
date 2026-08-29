@@ -18,6 +18,6 @@ in
 
   flake.modules.homeManager.home-mango = {
     # Config is hot-edited from the dotfiles checkout (~/dotfiles/mango).
-    my.dotfiles.entries = [ "mango" ];
+    my.dotfiles.entries.mango.default = ./defaults/mango;
   };
 }
