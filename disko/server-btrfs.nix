@@ -1,64 +1,79 @@
 # Headless server: GPT, 1G ESP, unencrypted btrfs subvolumes (unattended reboots), swapfile.
+# Host sets my.disk.device (and optionally my.disk.swapSize).
 {
-  device,
-  swapSize ? "8G",
-}:
-{ lib, ... }:
-let
-  opts = [
-    "compress=zstd"
-    "noatime"
-  ];
-in
-{
-  disko.devices.disk.main = {
-    type = "disk";
-    inherit device;
-    content = {
-      type = "gpt";
-      partitions = {
-        ESP = {
-          priority = 1;
-          size = "1G";
-          type = "EF00";
-          content = {
-            type = "filesystem";
-            format = "vfat";
-            mountpoint = "/boot";
-            mountOptions = [ "umask=0077" ];
-          };
+  flake.modules.nixos.disko-server-btrfs =
+    { config, lib, ... }:
+    let
+      cfg = config.my.disk;
+      opts = [
+        "compress=zstd"
+        "noatime"
+      ];
+    in
+    {
+      options.my.disk = {
+        device = lib.mkOption {
+          type = lib.types.str;
+          example = "/dev/nvme0n1";
+          description = "Disk this layout is applied to.";
         };
-        root = {
-          size = "100%";
+        swapSize = lib.mkOption {
+          type = lib.types.str;
+          default = "8G";
+        };
+      };
+
+      config = {
+        disko.devices.disk.main = {
+          type = "disk";
+          inherit (cfg) device;
           content = {
-            type = "btrfs";
-            extraArgs = [ "-f" ];
-            subvolumes = {
-              "@" = {
-                mountpoint = "/";
-                mountOptions = opts;
+            type = "gpt";
+            partitions = {
+              ESP = {
+                priority = 1;
+                size = "1G";
+                type = "EF00";
+                content = {
+                  type = "filesystem";
+                  format = "vfat";
+                  mountpoint = "/boot";
+                  mountOptions = [ "umask=0077" ];
+                };
               };
-              "@home" = {
-                mountpoint = "/home";
-                mountOptions = opts;
-              };
-              "@nix" = {
-                mountpoint = "/nix";
-                mountOptions = opts;
-              };
-              "@log" = {
-                mountpoint = "/var/log";
-                mountOptions = opts;
-              };
-              "@swap" = {
-                mountpoint = "/.swap";
-                swap.swapfile.size = swapSize;
+              root = {
+                size = "100%";
+                content = {
+                  type = "btrfs";
+                  extraArgs = [ "-f" ];
+                  subvolumes = {
+                    "@" = {
+                      mountpoint = "/";
+                      mountOptions = opts;
+                    };
+                    "@home" = {
+                      mountpoint = "/home";
+                      mountOptions = opts;
+                    };
+                    "@nix" = {
+                      mountpoint = "/nix";
+                      mountOptions = opts;
+                    };
+                    "@log" = {
+                      mountpoint = "/var/log";
+                      mountOptions = opts;
+                    };
+                    "@swap" = {
+                      mountpoint = "/.swap";
+                      swap.swapfile.size = cfg.swapSize;
+                    };
+                  };
+                };
               };
             };
           };
         };
+        fileSystems."/var/log".neededForBoot = lib.mkDefault true;
       };
     };
-  };
-  fileSystems."/var/log".neededForBoot = lib.mkDefault true;
 }

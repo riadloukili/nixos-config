@@ -1,6 +1,10 @@
+{ mods, ... }:
 {
-  flake.modules.nixos.host-eleuthia-disk = import ../../../disko/laptop-luks-btrfs.nix {
-    device = "/dev/nvme0n1";
-    swapSize = "16G";
+  flake.modules.nixos.host-eleuthia-disk = {
+    imports = [ mods.nixos.disko-laptop-luks-btrfs ];
+    my.disk = {
+      device = "/dev/nvme0n1";
+      swapSize = "16G";
+    };
   };
 }
