@@ -4,6 +4,8 @@
 #                 ~/.config/sops/age/keys.txt is derived from it at home-manager activation)
 #   host-<name>   a machine's key (/etc/ssh/ssh_host_ed25519_key.pub, or
 #                 `just sops-add-host <name> <ip>`)
+#   master        offline recovery key (age-keygen; private half lives only in
+#                 the password manager) — listed on every file
 # Add a key under `keys:`, then list it in the rules that should include it,
 # then `sops updatekeys --yes secrets/**/*.yaml` from a machine that can already decrypt.
 #
@@ -17,29 +19,35 @@
 keys:
   - &user-riad age10lja78hfccgn20p7gvy7gahmjt5nhw4vgdk830gcmd499dc5vpjs56vx4x
   - &host-eleuthia age190vlwmgk838afm7thk23n74wjvrhrlmrwa6dw8gkh8glawjxcujsnpye78
+  - &master age1nvt6kzcc33regum2y29exawr09dtsqgjs3d5mm70hmckd2jvy44qgdaxgt
 creation_rules:
   - path_regex: secrets/common\.yaml$
     key_groups:
       - age:
           - *user-riad
           - *host-eleuthia
+          - *master
   - path_regex: secrets/hosts/common\.yaml$
     key_groups:
       - age:
           - *user-riad
           - *host-eleuthia
+          - *master
   - path_regex: secrets/hosts/eleuthia\.yaml$
     key_groups:
       - age:
           - *user-riad
           - *host-eleuthia
+          - *master
   - path_regex: secrets/users/common\.yaml$
     key_groups:
       - age:
           - *user-riad
           - *host-eleuthia
+          - *master
   - path_regex: secrets/users/riad\.yaml$
     key_groups:
       - age:
           - *user-riad
           - *host-eleuthia
+          - *master
