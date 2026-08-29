@@ -1,61 +1,41 @@
-{ config, lib, pkgs, ... }:
-
+# Pull-based updates: the host rebuilds itself from `my.repo.uri` daily.
+# Pushing to main therefore deploys to every host with this aspect.
 {
-  options = {
-    mySystem.autoUpdate = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Enable automatic system updates (enabled by default)";
+  flake.modules.nixos.services-auto-update =
+    { config, lib, ... }:
+    let
+      cfg = config.my.autoUpdate;
+    in
+    {
+      options.my.autoUpdate = {
+        enable = lib.mkEnableOption "daily self-update from the repo" // {
+          default = true;
+        };
+        time = lib.mkOption {
+          type = lib.types.str;
+          default = "02:00";
+          description = "Daily run time (HH:MM); randomised by up to 45 minutes.";
+        };
+        allowReboot = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+          description = "Reboot automatically when the kernel or initrd changed.";
+        };
       };
-      
-      time = lib.mkOption {
-        type = lib.types.str;
-        default = "02:00";
-        description = "Time to run updates (24-hour format)";
-      };
-      
-      flakeUri = lib.mkOption {
-        type = lib.types.str;
-        default = "github:riadloukili/nixos-config";
-        description = "Flake URI to update from";
-      };
-      
-      allowReboot = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Allow automatic reboot if required";
-      };
-    };
-  };
 
-  config = lib.mkIf config.mySystem.autoUpdate.enable {
-    # Enable automatic updates
-    system.autoUpgrade = {
-      enable = true;
-      flake = "${config.mySystem.autoUpdate.flakeUri}#${config.environment.variables.CLOUD_PROVIDER}-${config.networking.hostName}";
-      flags = [
-        "--refresh"
-        "--no-write-lock-file"
-        "-L" # print build logs
-      ];
-      dates = "daily";
-      randomizedDelaySec = "45min";
-      allowReboot = config.mySystem.autoUpdate.allowReboot;
+      config = lib.mkIf cfg.enable {
+        system.autoUpgrade = {
+          enable = true;
+          flake = "${config.my.repo.uri}#${config.networking.hostName}";
+          flags = [
+            "--refresh"
+            "--no-write-lock-file"
+            "-L"
+          ];
+          dates = "*-*-* ${cfg.time}:00";
+          randomizedDelaySec = "45min";
+          inherit (cfg) allowReboot;
+        };
+      };
     };
-
-    # Set specific time using systemd timer
-    systemd.timers.nixos-upgrade.timerConfig = {
-      OnCalendar = lib.mkForce "*-*-* ${config.mySystem.autoUpdate.time}:00";
-    };
-
-    # Better logging configuration
-    systemd.services.nixos-upgrade.serviceConfig = {
-      StandardOutput = "journal";
-      StandardError = "journal";
-    };
-    
-    # Ensure system has git for flake operations
-    environment.systemPackages = [ pkgs.git ];
-  };
 }

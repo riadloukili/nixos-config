@@ -1,56 +1,48 @@
-{ config, lib, pkgs, ... }:
-
-let
-  portRangeType = lib.types.submodule {
-    options = {
-      from = lib.mkOption { type = lib.types.port; description = "Start of port range"; };
-      to = lib.mkOption { type = lib.types.port; description = "End of port range"; };
-    };
-  };
-in
+# Firewall with explicit port and range lists.
+# services/docker.nix and core/ssh.nix also add rules; check them too.
 {
-  options = {
-    mySystem.firewall = {
-      enable = lib.mkEnableOption "firewall";
-
-      allowedTCPPorts = lib.mkOption {
+  flake.modules.nixos.services-firewall =
+    { config, lib, ... }:
+    let
+      cfg = config.my.firewall;
+      range = lib.types.submodule {
+        options = {
+          from = lib.mkOption { type = lib.types.port; };
+          to = lib.mkOption { type = lib.types.port; };
+        };
+      };
+      ports = lib.mkOption {
         type = lib.types.listOf lib.types.port;
-        default = [];
-        description = "List of TCP ports to allow";
+        default = [ ];
+      };
+      ranges = lib.mkOption {
+        type = lib.types.listOf range;
+        default = [ ];
+        example = [
+          {
+            from = 20000;
+            to = 20100;
+          }
+        ];
+      };
+    in
+    {
+      options.my.firewall = {
+        enable = lib.mkEnableOption "the firewall" // {
+          default = true;
+        };
+        tcp = ports;
+        udp = ports;
+        tcpRanges = ranges;
+        udpRanges = ranges;
       };
 
-      allowedUDPPorts = lib.mkOption {
-        type = lib.types.listOf lib.types.port;
-        default = [];
-        description = "List of UDP ports to allow";
-      };
-
-      allowedTCPPortRanges = lib.mkOption {
-        type = lib.types.listOf portRangeType;
-        default = [];
-        description = "List of TCP port ranges to allow";
-      };
-
-      allowedUDPPortRanges = lib.mkOption {
-        type = lib.types.listOf portRangeType;
-        default = [];
-        description = "List of UDP port ranges to allow";
+      config.networking.firewall = {
+        inherit (cfg) enable;
+        allowedTCPPorts = cfg.tcp;
+        allowedUDPPorts = cfg.udp;
+        allowedTCPPortRanges = cfg.tcpRanges;
+        allowedUDPPortRanges = cfg.udpRanges;
       };
     };
-  };
-
-  config = lib.mkMerge [
-    (lib.mkIf config.mySystem.firewall.enable {
-      networking.firewall = {
-        enable = true;
-        allowedTCPPorts = config.mySystem.firewall.allowedTCPPorts;
-        allowedUDPPorts = config.mySystem.firewall.allowedUDPPorts;
-        allowedTCPPortRanges = config.mySystem.firewall.allowedTCPPortRanges;
-        allowedUDPPortRanges = config.mySystem.firewall.allowedUDPPortRanges;
-      };
-    })
-    (lib.mkIf (!config.mySystem.firewall.enable) {
-      networking.firewall.enable = false;
-    })
-  ];
 }
