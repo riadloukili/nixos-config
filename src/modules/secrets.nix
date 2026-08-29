@@ -8,8 +8,8 @@
   flake.modules.nixos."secrets" =
     { config, lib, ... }:
     let
-      common = ../secrets/common.yaml;
-      hostFile = ../secrets + "/${config.networking.hostName}.yaml";
+      common = ../../secrets/common.yaml;
+      hostFile = ../../secrets + "/${config.networking.hostName}.yaml";
     in
     {
       options.my.secrets.enable = lib.mkOption {

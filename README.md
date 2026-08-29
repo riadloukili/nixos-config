@@ -4,16 +4,17 @@ My NixOS machines: a homelab server, a laptop, and room for cloud VMs.
 
 ```text
 flake.nix        inputs only; import-tree loads every .nix file below as a flake-parts module
-lib/             plumbing: mods.nix (the aspect registry → `mods` argument), hosts.nix (host discovery → `hosts` argument)
-outputs/         what the flake exports: hosts discovery, ISOs, devshell, lint/format/checks
 hosts/<provider>/<name>/   one machine: default.nix (profiles + users + options), hardware.nix, disko.nix
 profiles/        presets a host composes: base → server | desktop → laptop
 users/<name>/    one user: default.nix (system user, registers users.<name>) + whatever they want
                  (home.nix = their home-manager config, scripts, ...). Only default.nix is auto-loaded.
-modules/         one small NixOS aspect per thing (docker, firewall, gc, secrets, dotfiles, desktop/*, hardware/*, boot/*)
-disko/           disk-layout aspects; a host picks one and sets my.disk.device
-installer/       live-ISO base + the offline install-<host> script
 secrets/         sops-encrypted YAML; .sops.yaml lists recipients
+src/             what the above is built from — rarely edited
+  modules/       one small NixOS aspect per thing (docker, firewall, gc, secrets, dotfiles, desktop/*, hardware/*, boot/*)
+  disko/         disk-layout aspects; a host picks one and sets my.disk.device
+  installer/     live-ISO base + the offline install-<host> script
+  lib/           plumbing: mods.nix (the aspect registry → `mods` argument), hosts.nix (host discovery → `hosts` argument)
+  outputs/       what the flake exports: hosts discovery, ISOs, devshell, lint/format/checks
 ```
 
 Hosts are named after GAIA's subfunctions (Horizon Forbidden West): `apollo`, `eleuthia`; free: `aether artemis demeter hades hephaestus minerva poseidon`.
@@ -23,11 +24,11 @@ Hosts are named after GAIA's subfunctions (Horizon Forbidden West): `apollo`, `e
 Every `.nix` file is a flake-parts module that *registers* an aspect under a name:
 
 ```nix
-# modules/docker.nix
+# src/modules/docker.nix
 { flake.modules.nixos.docker = { config, lib, pkgs, ... }: { ... }; }
-# modules/hardware/thinkpad.nix
+# src/modules/hardware/thinkpad.nix
 { flake.modules.nixos."hardware/thinkpad" = { ... }; }
-# modules/dotfiles.nix
+# src/modules/dotfiles.nix
 { flake.modules.homeManager.dotfiles = { config, lib, pkgs, ... }: { ... }; }
 ```
 

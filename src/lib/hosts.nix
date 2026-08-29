@@ -4,7 +4,7 @@
 # Consumed by outputs/hosts.nix and outputs/iso.nix.
 { inputs, lib, ... }:
 let
-  hostsDir = ../hosts;
+  hostsDir = ../../hosts;
   isDir = _: type: type == "directory";
   subdirs = dir: lib.attrNames (lib.filterAttrs isDir (builtins.readDir dir));
 in
