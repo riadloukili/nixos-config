@@ -3,15 +3,20 @@
 # browser). Their configs come from each user's dotfiles.
 {
   flake.modules.nixos."desktop/tools" =
-    { pkgs, ... }:
+    { config, pkgs, ... }:
     {
+      programs = {
+        # Package + PAM service; also runs hypridle as a user service (so no exec-once for it).
+        hyprlock.enable = true;
+        thunar.enable = true; # package + gvfs/tumbler wiring
+      };
+      security.pam.services.hyprlock.fprintAuth = config.services.fprintd.enable;
+
       environment.systemPackages = with pkgs; [
         waybar
         swaynotificationcenter
         rofi
         wlogout
-        hyprlock
-        hypridle
         hyprpaper
         kitty
         grim
@@ -26,7 +31,6 @@
         networkmanagerapplet
         nwg-displays
         nwg-look
-        thunar
         xarchiver
         qalculate-gtk
         brave
@@ -35,6 +39,5 @@
         zathura
         xdg-utils
       ];
-      security.pam.services.hyprlock = { };
     };
 }
