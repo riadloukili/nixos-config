@@ -32,7 +32,7 @@ Every `.nix` file is a flake-parts module that *registers* an aspect under a nam
 { flake.modules.homeManager.dotfiles = { config, lib, pkgs, ... }: { ... }; }
 ```
 
-`lib/mods.nix` hands the registry back to every file as the `mods` argument, nested by path (`"hardware/thinkpad"` → `mods.nixos.hardware.thinkpad`), so composition is by name — and each aspect carries a `key`, so importing the same one from several places is deduplicated:
+`src/lib/mods.nix` hands the registry back to every file as the `mods` argument, nested by path (`"hardware/thinkpad"` → `mods.nixos.hardware.thinkpad`), so composition is by name — and each aspect carries a `key`, so importing the same one from several places is deduplicated:
 
 ```nix
 # hosts/home/eleuthia/default.nix
@@ -44,9 +44,9 @@ Every `.nix` file is a flake-parts module that *registers* an aspect under a nam
 }
 ```
 
-- Names mirror paths: `modules/desktop/hyprland.nix` → `mods.nixos.desktop.hyprland`; `modules/docker.nix` → `mods.nixos.docker`; `profiles/server.nix` → `mods.nixos.profiles.server`; `users/riad/default.nix` → `mods.nixos.users.riad`; `disko/server-btrfs.nix` → `mods.nixos.disko.server-btrfs`; `modules/dotfiles.nix` → `mods.homeManager.dotfiles`; a host registers `hosts/<name>/{default,hardware,disk}`. Files starting with `_` are helpers, not modules.
-- `outputs/hosts.nix` finds every `hosts/<provider>/<name>/`, sets `networking.hostName = <name>` and `$CLOUD_PROVIDER = <provider>`, and builds `nixosConfigurations.<name>` from the three host aspects.
-- A file may carry both halves of a feature (see `modules/desktop/hyprland.nix`: NixOS part + home-manager part).
+- Names mirror paths: `src/modules/desktop/hyprland.nix` → `mods.nixos.desktop.hyprland`; `src/modules/docker.nix` → `mods.nixos.docker`; `profiles/server.nix` → `mods.nixos.profiles.server`; `users/riad/default.nix` → `mods.nixos.users.riad`; `src/disko/server-btrfs.nix` → `mods.nixos.disko.server-btrfs`; `src/modules/dotfiles.nix` → `mods.homeManager.dotfiles`; a host registers `hosts/<name>/{default,hardware,disk}`. Files starting with `_` are helpers, not modules.
+- `src/outputs/hosts.nix` finds every `hosts/<provider>/<name>/`, sets `networking.hostName = <name>` and `$CLOUD_PROVIDER = <provider>`, and builds `nixosConfigurations.<name>` from the three host aspects.
+- A file may carry both halves of a feature (see `src/modules/desktop/hyprland.nix`: NixOS part + home-manager part).
 - Profiles own the software a class of machine needs (`desktop.tools` installs waybar/rofi/kitty/… system-wide). A user's folder owns everything about that user: `users/<name>/default.nix` is the system user and points `home-manager.users.<name>` at `./home.nix`, which is theirs to organise.
 - Options live under `my.*` only where an aspect needs parameters (`my.firewall`, `my.docker`, `my.autoUpdate`, `my.gc`, `my.secrets`, `my.repo`, `my.dotfiles`). Everything else is on/off by import.
 - `stateVersion` is set per host and never changes. Flakes only see git-tracked files: `git add` new files before evaluating.
@@ -85,11 +85,11 @@ Live images log in as `riad` / `nixos`; SSH keys work everywhere.
 
 ## Secrets
 
-sops-nix with age. Recipients: the admin key (`~/.config/sops/age/keys.txt`) plus each host's SSH host key via `ssh-to-age`. `secrets/common.yaml` is readable by every host, `secrets/<host>.yaml` by one host, `secrets/user.yaml` by the user's home-manager. `modules/secrets.nix` only activates once `secrets/common.yaml` exists, so a fresh host builds before enrolment; add secrets there.
+sops-nix with age. Recipients: the admin key (`~/.config/sops/age/keys.txt`) plus each host's SSH host key via `ssh-to-age`. `secrets/common.yaml` is readable by every host, `secrets/<host>.yaml` by one host, `secrets/user.yaml` by the user's home-manager. `src/modules/secrets.nix` only activates once `secrets/common.yaml` exists, so a fresh host builds before enrolment; add secrets there.
 
 ## Dotfiles
 
-Program configs are not in this repo. `modules/dotfiles.nix` links every top-level directory of the checkout at `~/personal/dotfiles` ([riadloukili/dotfiles](https://github.com/riadloukili/dotfiles)) into `~/.config/<name>` at activation — live symlinks, so editing needs no rebuild. No checkout, or no `hypr/` in it → Hyprland (or waybar, nvim, tmux, …) runs with its own built-in defaults. Set `my.dotfiles.path` per user to use a different repo.
+Program configs are not in this repo. `src/modules/dotfiles.nix` links every top-level directory of the checkout at `~/personal/dotfiles` ([riadloukili/dotfiles](https://github.com/riadloukili/dotfiles)) into `~/.config/<name>` at activation — live symlinks, so editing needs no rebuild. No checkout, or no `hypr/` in it → Hyprland (or waybar, nvim, tmux, …) runs with its own built-in defaults. Set `my.dotfiles.path` per user to use a different repo.
 
 ## Editor
 
