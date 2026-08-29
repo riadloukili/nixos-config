@@ -1,5 +1,5 @@
-# System user + home-manager entry point (users/riad/home.nix → homeManager.users.riad).
-{ mods, ... }:
+# riad: the system user. Everything else about me is in ./home.nix
+# (home-manager) and the dotfiles repo (github:riadloukili/dotfiles).
 {
   flake.modules.nixos."users/riad" = {
     users.users.riad = {
@@ -19,6 +19,6 @@
       # Password: modules/secrets.nix (riad-password) once enrolled; key-only before.
     };
 
-    home-manager.users.riad = mods.homeManager.users.riad;
+    home-manager.users.riad = ./home.nix;
   };
 }

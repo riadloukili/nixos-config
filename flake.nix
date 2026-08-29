@@ -4,6 +4,8 @@
   # Inputs only. Every .nix file in the directories below is a flake-parts
   # module (auto-imported by import-tree): ./flake builds the outputs, the
   # others register NixOS / home-manager aspects (see flake/mods.nix).
+  # Exception: under users/<name>/ only default.nix is loaded; the rest of
+  # that folder is the user's own (home.nix, scripts, ...), imported by it.
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager = {
@@ -26,7 +28,6 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    wrappers.url = "github:BirdeeHub/nix-wrapper-modules";
 
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
@@ -45,12 +46,10 @@
         ./flake
         ./modules
         ./profiles
-        ./users
-        ./home
+        (inputs.import-tree.filter (inputs.nixpkgs.lib.hasSuffix "default.nix") ./users)
         ./hosts
         ./installer
         ./disko
-        ./wrappers
       ]
     );
 }

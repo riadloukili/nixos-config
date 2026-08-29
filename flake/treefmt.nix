@@ -22,8 +22,6 @@
     settings.excludes = [
       "*.lock"
       "secrets/*.yaml"
-      "wrappers/defaults/p10k.zsh"
-      "home/defaults/*"
     ];
   };
 }
