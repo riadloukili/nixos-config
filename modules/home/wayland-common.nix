@@ -13,7 +13,6 @@
         hypridle
         hyprpaper
         awww
-        wallust
         grim
         slurp
         swappy
@@ -36,7 +35,6 @@
         "rofi"
         "swaync"
         "wlogout"
-        "wallust"
       ];
 
       services.cliphist.enable = true;

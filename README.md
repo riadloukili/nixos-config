@@ -113,7 +113,7 @@ Expected keys in `common.yaml`: `riad-password` (`mkpasswd -m yescrypt`), `tails
 
 ## Dotfiles
 
-Hot-edited configs (`hypr`, `mango`, `waybar`, `rofi`, `swaync`, `wlogout`, `wallust`, `nvim`) live in the separate dotfiles repo and are symlinked from `~/personal/dotfiles` (`my.dotfiles`, `mkOutOfStoreSymlink`) — edit and reload, no rebuild. Set `my.dotfiles.mutable = false` with a store `source` to freeze them.
+Hot-edited configs (`hypr`, `mango`, `waybar`, `rofi`, `swaync`, `wlogout`, `nvim`) live in the separate dotfiles repo and are symlinked from `~/personal/dotfiles` (`my.dotfiles`, `mkOutOfStoreSymlink`) — edit and reload, no rebuild. Set `my.dotfiles.mutable = false` with a store `source` to freeze them.
 
 CLI programs are wrapper modules (`modules/wrappers`): `nix run github:riadloukili/nixos-config#nvim` (or `#tmux`, `#zsh`, `#git`, `#btop`) works on any machine with Nix. The *config* is not duplicated: `nvim` loads `<dotfiles>/nvim`, `tmux` sources `<dotfiles>/tmux/tmux.conf`, `zsh` sources `<dotfiles>/zsh/p10k.zsh` and `zsh/zshrc.local` — the same files a non-Nix machine uses directly. Nix only adds the binary, plugins and tools (LSPs, formatters). All lookups are guarded, so the wrappers still start when no checkout is present.
 
