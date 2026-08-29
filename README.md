@@ -78,13 +78,13 @@ Servers (`profiles/server.nix`) pull `main` daily (`my.autoUpdate`), so **pushin
    sudo nixos-enter --root /mnt -c 'passwd riad'   # no password until secrets are enrolled
    ```
 
-1. Reboot, then from a machine with the admin age key: `just sops-add-host <name> <ip>`, add `*<name>` to the relevant `creation_rules` in `.sops.yaml`, `just secrets-edit common` (needs `riad-password` from `mkpasswd -m yescrypt`, and `tailscale-auth-key` for servers), `just push <name>`.
+1. Reboot, then from a machine with the admin age key: `just sops-add-host <name> <ip>`, add `*host-<name>` to the relevant `creation_rules` in `.sops.yaml`, `just secrets-edit common` (needs `riad-password` from `mkpasswd -m yescrypt`, and `tailscale-auth-key` for servers), `just push <name>`.
 
 Live images log in as `riad` / `nixos`; SSH keys work everywhere.
 
 ## Secrets
 
-sops-nix with age. Recipients: the admin key (`~/.config/sops/age/keys.txt`) plus each host's SSH host key via `ssh-to-age`. `secrets/common.yaml` is readable by every host, `secrets/<host>.yaml` by one host. `src/modules/secrets.nix` owns the mechanism and is inert until `secrets/common.yaml` exists, so a fresh host builds before enrolment; each consumer declares its own secret under `lib.mkIf config.my.secrets.enable` (see `users/riad/default.nix`, `src/modules/tailscale.nix`).
+sops-nix with age. Recipients in `.sops.yaml`: `user-<name>` for a person's admin key (`~/.config/sops/age/keys.txt`), `host-<name>` for a machine's key (its SSH host key via `ssh-to-age`). `secrets/common.yaml` is readable by every host, `secrets/<host>.yaml` by one host. `src/modules/secrets.nix` owns the mechanism and is inert until `secrets/common.yaml` exists, so a fresh host builds before enrolment; each consumer declares its own secret under `lib.mkIf config.my.secrets.enable` (see `users/riad/default.nix`, `src/modules/tailscale.nix`).
 
 ## Dotfiles
 
