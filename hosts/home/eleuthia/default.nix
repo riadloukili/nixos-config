@@ -6,10 +6,7 @@
       profiles.laptop
       users.riad
       boot.systemd-boot
-      hardware.intel
       hardware.thinkpad-x13-yoga
-      hardware.fingerprint
-      hardware.convertible
     ];
 
     system.stateVersion = "26.11";
