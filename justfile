@@ -49,33 +49,29 @@ update input="":
 
 # Closure diff between the running system and a fresh build
 diff target=host:
-    nh os build {{ flake }} -H {{ target }} --out-link /tmp/nixos-config-{{ target }}
-    nvd diff /run/current-system /tmp/nixos-config-{{ target }}
+    nh os build {{ flake }} -H {{ target }} --out-link result-diff-{{ target }}
+    nvd diff /run/current-system result-diff-{{ target }}
 
 # Enrol a host's SSH host key as a sops recipient and re-encrypt secrets
 sops-add-host name address:
     #!/usr/bin/env bash
     set -euo pipefail
     key=$(ssh-keyscan -t ed25519 "{{ address }}" 2>/dev/null | ssh-to-age)
+    [ -n "$key" ] || { echo "no ed25519 host key from {{ address }}" >&2; exit 1; }
     echo "{{ name }}: $key"
-    if grep -q "&{{ name }}" .sops.yaml; then
+    if grep -qE '^[[:space:]]*-[[:space:]]*&{{ name }} ' .sops.yaml; then
       sed -i "s|&{{ name }} age1.*|\&{{ name }} $key|" .sops.yaml
     else
       sed -i "/^keys:/a\\  - &{{ name }} $key" .sops.yaml
     fi
-    for f in secrets/*.yaml; do
-      [ -f "$f" ] && sops updatekeys --yes "$f" || true
-    done
-    echo "Add '*{{ name }}' to the creation_rules in .sops.yaml if it is not covered yet."
+    shopt -s nullglob
+    for f in secrets/*.yaml; do sops updatekeys --yes "$f"; done
+    echo "Now list '*{{ name }}' under the creation_rules that should include it, and re-run updatekeys."
 
 # Edit (or create) an encrypted secrets file
 secrets-edit file="common":
     sops secrets/{{ file }}.yaml
 
-# Hash a password for secrets/common.yaml (riad-password)
-mkpasswd:
-    mkpasswd -m yescrypt
-
 # Remove build results
 clean:
-    rm -f result result-*
+    rm -f result*

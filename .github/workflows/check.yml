@@ -4,27 +4,17 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   check:
-    name: nix flake check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v16
       - uses: DeterminateSystems/magic-nix-cache-action@v9
+      # Formatting, lints, hooks and every host closure.
       - run: nix flake check --accept-flake-config -L
-  build:
-    name: build ${{ matrix.target }}
-    runs-on: ubuntu-latest
-    needs: check
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
-          - packages.x86_64-linux.iso-server
-          - packages.x86_64-linux.iso-eleuthia
-    steps:
-      - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@v16
-      - uses: DeterminateSystems/magic-nix-cache-action@v9
-      - run: nix build --accept-flake-config -L ".#${{ matrix.target }}"
+      # Installer images (they embed the host closures built above).
+      - run: nix build --accept-flake-config -L .#iso-server .#iso-eleuthia

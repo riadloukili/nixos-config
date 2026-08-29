@@ -1,5 +1,6 @@
 # Recipients: the admin's age key (from ~/.config/sops/age/keys.txt) and one
-# key per host derived from its SSH host key (`just sops-add-host <name> <ip>`).
+# key per host derived from its SSH host key. `just sops-add-host <name> <ip>`
+# adds the host under `keys:`; then list it (`*<name>`) in the rules below.
 #
 # Per-host secrets (only that host + admin) look like:
 #   - path_regex: secrets/apollo\.yaml$
@@ -7,18 +8,9 @@
 #       - age: [*riad, *apollo]
 keys:
   - &riad age1vpwzq7ae6kysut2tu32u4hx799dmt4vdh2klh576pcfqv2rdxves3es9ka
-  # - &apollo age1...
-  # - &eleuthia age1...
 creation_rules:
   # Read by every host: user password hash, tailscale key, ...
   - path_regex: secrets/common\.yaml$
-    key_groups:
-      - age:
-          - *riad
-          # - *apollo
-          # - *eleuthia
-  # Home-manager (user-level) secrets, decrypted with the user's own age key.
-  - path_regex: secrets/user\.yaml$
     key_groups:
       - age:
           - *riad

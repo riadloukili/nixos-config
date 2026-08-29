@@ -37,15 +37,10 @@
       ];
     };
 
+    # treefmt already runs deadnix/statix/typos; only what it does not cover is added.
     pre-commit.settings = {
       hooks = {
         treefmt.enable = true;
-        deadnix.enable = true;
-        statix.enable = true;
-        typos = {
-          enable = true;
-          settings.configPath = ".typos.toml";
-        };
         yamllint.enable = true;
         markdownlint = {
           enable = true;
@@ -56,8 +51,6 @@
         };
         check-added-large-files.enable = true;
         check-merge-conflicts.enable = true;
-        end-of-file-fixer.enable = true;
-        trim-trailing-whitespace.enable = true;
       };
       excludes = [ "secrets/.*\\.yaml" ];
     };
