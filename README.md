@@ -1,303 +1,134 @@
-# NixOS Config
+# nixos-config
 
-[![Update Nix Flake](https://github.com/riadloukili/nixos-config/actions/workflows/update-flake.yml/badge.svg)](https://github.com/riadloukili/nixos-config/actions/workflows/update-flake.yml)
+Flake-based NixOS configuration for my machines: headless homelab servers, cloud VMs and a laptop with Hyprland + Mango.
 
-Universal, flake-based NixOS configurations (stable 25.05 "Warbler") for multiple machines and cloud providers.
+- **NixOS**: `nixos-unstable` by default, `nixos-26.05` available per host (`channel = "stable"`).
+- **Structure**: [flake-parts](https://flake.parts) + [import-tree](https://github.com/vic/import-tree), dendritic style — every file under `modules/` is auto-imported and registers named *aspects*; a host is an import list.
+- **Disks**: [disko](https://github.com/nix-community/disko) layouts, reusable per machine class.
+- **Deploy**: [nh](https://github.com/nix-community/nh) locally, [deploy-rs](https://github.com/serokell/deploy-rs) push, `system.autoUpgrade` pull from `main`.
+- **Secrets**: [sops-nix](https://github.com/Mic92/sops-nix) for the system, [secretspec](https://secretspec.dev) for the dev shell.
+- **Programs**: [nix-wrapper-modules](https://github.com/BirdeeHub/nix-wrapper-modules) for nvim/zsh/tmux/git/btop (runnable anywhere with `nix run`); all configs live in the separate [dotfiles](https://github.com/riadloukili/dotfiles) checkout, hot-editable and shared with non-Nix machines.
+- **Installers**: live ISOs per role or per host, with an offline `install-<host>` command.
 
-**Production-ready features**: Auto-updates, smart garbage collection, Docker integration, advanced dotfiles, security hardening, and comprehensive automation.
+Hosts are named after GAIA's subfunctions (Horizon Forbidden West): `apollo` (homelab), `eleuthia` (laptop); free: `aether artemis demeter hades hephaestus minerva poseidon`.
 
-## Prerequisites
+## Layout
 
-* Nix 2.8+ with flakes enabled
-* Git
-* SSH access (for deployment)
-* A Hetzner/AWS/DO/etc. VM or local machine with the NixOS ISO
-
-## Getting started
-
-You can either clone the repository locally or use it directly from GitHub:
-
-### Option 1: Clone locally (for development)
-
-1. **Clone this repo**
-
-   ```bash
-   git clone https://github.com/riadloukili/nixos-config.git
-   cd nixos-config
-   ```
-2. **Change the channel** (if needed)
-   Edit `flake.nix` to point at a different `nixos-<version>` channel.
-3. **Install or rebuild a host**
-
-   ```bash
-   sudo nixos-install --flake .#<provider-machine-id>
-   # ...or, after first install...
-   sudo nixos-rebuild switch --flake .#<provider-machine-id>
-   ```
-
-### Option 2: Use directly from GitHub (for deployment)
-
-**Install or rebuild a host directly**
-
-```bash
-sudo nixos-install --flake github:riadloukili/nixos-config#<provider-machine-id>
-# ...or, after first install...
-sudo nixos-rebuild switch --flake github:riadloukili/nixos-config#<provider-machine-id>
+```text
+flake.nix              inputs only — never edited to add hosts or features
+justfile               all day-to-day tasks (`just`)
+modules/
+  flake/               flake-level plumbing: hosts inventory, channels, deploy, installers, devshell, checks
+  core/                aspects every host gets (nix, ssh, users, gc, nh, boot loaders, ...)
+  roles/               pure import lists: base → server → homelab | cloud ; laptop
+  services/            parametrised modules with `my.<x>` options (docker, firewall, auto-update, tailscale)
+  hardware/            hardware aspects + disko/ layouts
+  desktop/             NixOS halves of the desktop (greetd, compositors, pipewire, portals, fonts, keyboard)
+  home/                home-manager aspects (cli, neovim, dotfiles, wayland stack, ...)
+  wrappers/            nix-wrapper-modules programs → also flake packages
+  secrets/             sops-nix wiring and individual secrets
+  installer/           live-ISO base and the per-host install script
+  hosts/<name>/        default.nix (inventory + software), hardware.nix, disko.nix
+secrets/               sops-encrypted YAML (common.yaml, <host>.yaml, user.yaml, devshell.yaml)
 ```
 
-Machine IDs are automatically generated as `<provider>-<machine>` (e.g., `hetzner-eu-lite-nix-1`).
+### How composition works
 
-## Features
-
-### 🔄 Auto-Update System
-- **Daily automatic updates** from GitHub repository
-- **Configurable timing** (default: 02:00 with randomized delay)
-- **Optional automatic reboot** capability
-- **Enhanced logging** to systemd journal
-
-### 🗑️ Smart Garbage Collection
-- **Intelligent cleanup** preserving minimum generations (default: 5)
-- **Time-based deletion** with configurable age thresholds (default: 7 days)
-- **Store optimization** for disk space management
-- **Bootloader integration** with configuration limits
-
-### 🐳 Docker Integration
-- **Rootless Docker** by default for enhanced security
-- **Docker Compose** support with optional package inclusion
-- **Configurable security modes**
-
-### 🏠 Advanced Home Manager
-- **Comprehensive dotfiles management** with custom themes
-- **Zsh with Oh My Zsh** and Powerlevel10k theme
-- **Cloud provider integration** with provider-specific icons
-- **Modern CLI tools**: ripgrep, fd, bat, htop
-- **Advanced Tmux configuration** with TPM plugin manager
-
-### 🔐 Security Hardening
-- **SSH key-only authentication** (password auth disabled)
-- **Firewall integration** with explicit port management
-- **Passwordless sudo** for wheel group members
-- **Root login disabled** by default
-
-### 📦 Package Management
-- **Custom package option** (`mySystem.packages`)
-- **Profile system**: base and server configurations
-- **Declarative package lists** per host
-
-### 🌐 Networking & Services
-- **DNS management** with Cloudflare and Quad9 defaults
-- **Multiple bootloader support** (GRUB and systemd-boot)
-- **OpenSSH hardening** with configurable ports
-
-## Repository layout
-
-```
-nixos-config/
-├── flake.nix                      ← top-level flake definition
-├── README.md
-├── modules/                       ← reusable module fragments
-│   ├── packages.nix               ← custom package-list option
-│   ├── services/                  ← modular service configurations
-│   │   ├── auto-update.nix        ← automatic system updates
-│   │   ├── garbage-collection.nix ← smart cleanup & optimization
-│   │   ├── docker.nix             ← rootless Docker integration
-│   │   ├── networking.nix         ← DNS and network configuration
-│   │   ├── openssh.nix            ← SSH service module
-│   │   ├── firewall.nix           ← firewall service module
-│   │   └── boot.nix               ← boot loader module
-│   └── users/                     ← per-user SSH & account info
-│       ├── default.nix            ← imports all `<user>.nix`
-│       └── riad.nix               ← includes home-manager config
-├── profiles/                      ← high-level package profiles
-│   ├── base.nix                   ← essential packages & services
-│   └── server.nix                 ← production server configuration
-├── dotfiles/                      ← custom dotfiles and themes
-│   └── riad/                      ← user-specific configurations
-│       ├── p10k.zsh               ← Powerlevel10k theme with cloud icons
-│       └── tmux.conf              ← advanced Tmux configuration
-└── hosts/                         ← per-machine configs, grouped by provider
-    ├── hetzner/
-    │   └── eu-lite-nix-1/
-    │       ├── hardware-configuration.nix
-    │       └── configuration.nix
-    ├── aws/
-    ├── digitalocean/
-    └── home/
-```
-
-## Adding a new machine
-
-> **Provider-specific guides**: See [Hetzner installation guide](hosts/hetzner/README.md) for detailed Hetzner setup instructions.
-
-1. **Create the directory**
-
-   ```bash
-   mkdir -p hosts/<provider>/<machine-id>
-   ```
-2. **Generate hardware config**
-   Boot the NixOS ISO on your target VM, partition & label your disks, mount under `/mnt`, then:
-
-   ```bash
-   nixos-generate-config --root /mnt
-   cp /mnt/etc/nixos/hardware-configuration.nix \
-      hosts/<provider>/<machine-id>/
-   ```
-3. **Write `configuration.nix`** in that folder. For a basic setup:
-
-   ```nix
-   { config, pkgs, lib, inputs, ... }:
-   {
-     imports = [
-       ./hardware-configuration.nix
-       ../../../modules/packages.nix
-       ../../../modules/users
-       ../../../modules/services/openssh.nix
-       ../../../modules/services/firewall.nix
-       ../../../modules/services/boot.nix
-       ../../../profiles/base.nix
-       inputs.home-manager.nixosModules.home-manager
-     ];
-
-     networking.hostName = builtins.baseNameOf ./.;
-     time.timeZone = "America/Toronto";
-     i18n.defaultLocale = "en_US.UTF-8";
-
-     nix.settings.experimental-features = [ "nix-command" "flakes" ];
-     environment.variables.CLOUD_PROVIDER = builtins.baseNameOf (builtins.dirOf ./.); 
-
-     users.users.<username>.extraGroups = [ "wheel" ];
-     users.defaultUserShell = pkgs.zsh;
-     programs.zsh.enable = true;
-     security.sudo.wheelNeedsPassword = false;
-
-     mySystem.openssh = {
-       enable = true;
-       passwordAuthentication = false;
-       ports = [ 22 ];
-     };
-
-     mySystem.firewall = {
-       enable = true;
-       allowedTCPPorts = [ 22 ];
-     };
-
-     mySystem.boot = {
-       loader = "grub";
-       device = "/dev/sda";
-     };
-
-     home-manager = {
-       useGlobalPkgs = true;
-       useUserPackages = true;
-     };
-
-     mySystem.packages = [];
-     system.stateVersion = "25.05";
-   }
-   ```
-
-4. **For production servers**, use the server profile:
-
-   ```nix
-   imports = [
-     # ... other imports ...
-     ../../../profiles/server.nix  # Includes auto-updates, Docker, etc.
-   ];
-   ```
-
-5. **Machines are automatically discovered!**
-   
-   The flake automatically discovers all machines in the `hosts/` directory and creates configurations named `<provider>-<machine-id>`. No need to manually edit `flake.nix`!
-
-6. **Install or rebuild**
-
-   ```bash
-   sudo nixos-install --flake .#<provider>-<machine-id>
-   # or later:
-   sudo nixos-rebuild switch --flake .#<provider>-<machine-id>
-   # or use the rebuild alias once logged in:
-   rebuild
-   ```
-
-## Managing users
-
-* **Define a user**: add `modules/users/<username>.nix`:
-
-  ```nix
-  { config, lib, ... }:
-  {
-    users.users.<username> = {
-      isNormalUser = true;
-      openssh.authorizedKeys.keys = [ "<their-public-key>" ];
-    };
-  }
-  ```
-* **Control sudo per-host**: in each host's `configuration.nix`:
-
-  ```nix
-  users.users.<username>.extraGroups = [ "wheel" ];
-  security.sudo.wheelNeedsPassword = false;
-  ```
-
-## Managing packages
-
-1. **Declare the option** in `modules/packages.nix` as `mySystem.packages`.
-2. **Per-host packages**: in `configuration.nix`:
-
-   ```nix
-   mySystem.packages = [
-     pkgs.curl
-     pkgs.htop
-   ];
-   ```
-3. **Shared profiles**: 
-   - `profiles/base.nix` — essential packages for all systems
-   - `profiles/server.nix` — production server packages with Docker and auto-updates
-
-## Service Configuration
-
-### Auto-Update Service
-Enable automatic daily updates in your `configuration.nix`:
+Each file contributes aspects:
 
 ```nix
-mySystem.auto-update = {
-  enable = true;
-  time = "02:00";  # Optional: custom time
-  autoReboot = false;  # Optional: enable automatic reboots
+{ flake.modules.nixos.services-tailscale = { ... }; }
+{ flake.modules.homeManager.home-cli = { ... }; }
+```
+
+Roles are import lists of aspects; hosts import a role plus hardware aspects and register themselves in the inventory:
+
+```nix
+flake.hosts.apollo = {
+  stateVersion = "26.11";
+  deploy.hostname = "apollo";
+  modules = [ config.flake.modules.nixos.hosts-apollo ];               # software
+  hardwareModules = [ ...hosts-apollo-hardware ...hosts-apollo-disk ]; # excluded from the live ISO
 };
 ```
 
-### Garbage Collection
-Configure smart cleanup (included in base profile):
+`modules/flake/hosts.nix` turns the inventory into `nixosConfigurations`, `deploy.nix` into deploy-rs nodes, `installers.nix` into `iso-<host>` images.
 
-```nix
-mySystem.garbage-collection = {
-  enable = true;
-  time = "03:00";
-  preserveGenerations = 5;  # Keep minimum 5 generations
-  olderThan = "7d";  # Delete older than 7 days
-};
+Rules of thumb:
+
+- One concern per file. Add a feature = add a file.
+- Aspects are on/off by import. `mkEnableOption` only for modules that need parameters (`my.firewall`, `my.docker`, ...).
+- An aspect is imported by exactly one role (flake-parts does not deduplicate module imports).
+- home-manager aspects are added through `my.home.modules`; every user in `core/users` picks them up.
+- Never bump `stateVersion`.
+
+## Everyday use
+
+```sh
+nix develop            # or direnv; installs pre-commit hooks
+just                   # list tasks
+just switch            # rebuild this machine (nh)
+just build apollo      # build a host without activating
+just deploy apollo     # deploy-rs with magic rollback
+just push apollo       # ad-hoc: nh os switch --target-host
+just iso eleuthia      # build result-iso-eleuthia/iso/nixos-eleuthia.iso
+just check             # nix flake check: formatting, lints, hooks, hosts, deploy schema
+just fmt
 ```
 
-### Docker Service
-Enable rootless Docker:
+Servers also pull `main` daily (`my.autoUpdate`), so **pushing to `main` deploys**. CI builds every host and ISO on pull requests; keep the branch green before merging.
 
-```nix
-mySystem.docker = {
-  enable = true;
-  rootless = true;  # Default: true
-  enableCompose = true;  # Optional: include docker-compose
-};
+## Installing a machine
+
+1. Add `modules/hosts/<name>/` (copy `_template`), pick a disko layout and set the device.
+1. `just iso <name>`, write the image to USB (`dd if=result-iso-<name>/iso/*.iso of=/dev/sdX bs=4M status=progress`).
+1. Boot it. You get the host's real desktop/server config live (user `riad`, password `nixos`, SSH keys work).
+1. `install-<name> --dry-run`, then `install-<name>`. It runs the disko script (asks for confirmation, prompts for the LUKS passphrase on encrypted layouts) and `nixos-install` from the closure on the image — no network needed.
+1. Reboot, then from this repo: `just sops-add-host <name> <ip>` and add the host to the relevant `creation_rules` in `.sops.yaml`; `just deploy <name>`.
+1. On desktops: `git clone https://github.com/riadloukili/dotfiles ~/personal/dotfiles` (hot-editable configs), `fprintd-enroll`.
+
+Generic images: `just iso server` / `just iso desktop`.
+
+### Installing from the stock NixOS installer (no custom ISO)
+
+Boot any NixOS installer, open a terminal, check the target disk matches the host's `disko.nix` (`lsblk`), then:
+
+```sh
+sudo nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko/latest -- \
+  --mode destroy,format,mount --flake 'github:riadloukili/nixos-config#<name>'     # LUKS layouts prompt for the passphrase
+sudo nixos-install --flake 'github:riadloukili/nixos-config#<name>' --no-root-passwd --no-channel-copy
+sudo nixos-enter --root /mnt -c 'passwd riad'   # until secrets are enrolled the user has no password
+reboot
 ```
 
-## Useful commands
+Use `github:riadloukili/nixos-config/<branch>#<name>` for an unmerged branch. `nixos-install --flake` builds into `/mnt`'s store, so the live system's RAM is not a limit (unlike `disko-install`, which builds in the live store first).
 
-* `nix flake show` — list all available machine configurations
-* `nix flake check` — validate flake syntax and configurations
-* `nix flake update` — update your Nixpkgs channel
-* `sudo nixos-install --flake .#<provider-machine-id>` — fresh install
-* `sudo nixos-rebuild switch --flake .#<provider-machine-id>` — apply changes live
-* `sudo nixos-rebuild test --flake .#<provider-machine-id>` — test without switching
-* `sudo nixos-rebuild build --flake .#<provider-machine-id>` — build without applying
-* `rebuild` — convenient alias that auto-detects provider and hostname (uses GitHub repo)
-* `rebuild --refresh` — force refetch latest changes from GitHub repository
+## Secrets
+
+- **System secrets** (sops-nix): `secrets/common.yaml` is readable by every host; `secrets/<host>.yaml` by one host. Recipients are the admin age key (`~/.config/sops/age/keys.txt`) plus each host's SSH host key converted with `ssh-to-age`. `just secrets-edit common` creates or edits a file. Declare a secret in a small aspect under `modules/secrets/` (see `user-password.nix`).
+- **User secrets** (home-manager): `secrets/user.yaml`, decrypted with the admin age key.
+- **Dev-shell secrets** (secretspec): `secretspec.toml` declares them, `secrets/devshell.yaml` holds them (`sops://` provider). `secretspec check` / `secretspec run -- <cmd>`. secretspec is *not* a NixOS secret backend.
+
+Expected keys in `common.yaml`: `riad-password` (`mkpasswd -m yescrypt`), `tailscale-auth-key`.
+
+## Dotfiles
+
+Hot-edited configs (`hypr`, `mango`, `waybar`, `rofi`, `swaync`, `wlogout`, `wallust`, `nvim`) live in the separate dotfiles repo and are symlinked from `~/personal/dotfiles` (`my.dotfiles`, `mkOutOfStoreSymlink`) — edit and reload, no rebuild. Set `my.dotfiles.mutable = false` with a store `source` to freeze them.
+
+CLI programs are wrapper modules (`modules/wrappers`): `nix run github:riadloukili/nixos-config#nvim` (or `#tmux`, `#zsh`, `#git`, `#btop`) works on any machine with Nix. The *config* is not duplicated: `nvim` loads `<dotfiles>/nvim`, `tmux` sources `<dotfiles>/tmux/tmux.conf`, `zsh` sources `<dotfiles>/zsh/p10k.zsh` and `zsh/zshrc.local` — the same files a non-Nix machine uses directly. Nix only adds the binary, plugins and tools (LSPs, formatters). All lookups are guarded, so the wrappers still start when no checkout is present.
+
+`flake.dotfiles.runtime` (`$HOME/personal/dotfiles`) is where wrappers look at start-up. Once the dotfiles repo is on GitHub, add it as `inputs.dotfiles = { url = "github:riadloukili/dotfiles"; flake = false; }` and set `flake.dotfiles.store = inputs.dotfiles` in `modules/wrappers/dotfiles.nix` to have `nix run` bundle the config as well (then `nix flake update dotfiles` refreshes it).
+
+## Editor
+
+nixd is in the dev shell. Suggested settings (e.g. for nvim-lspconfig):
+
+```lua
+settings = { nixd = {
+  nixpkgs = { expr = "import (builtins.getFlake (toString ./.)).inputs.nixpkgs { }" },
+  options = {
+    nixos = { expr = "(builtins.getFlake (toString ./.)).nixosConfigurations.eleuthia.options" },
+    home_manager = { expr = "(builtins.getFlake (toString ./.)).nixosConfigurations.eleuthia.options.home-manager.users.type.getSubOptions []" },
+  },
+} }
+```
