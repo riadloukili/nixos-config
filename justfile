@@ -64,13 +64,13 @@ sops-add-host name address:
     else
       sed -i "/^keys:/a\\  - &host-{{ name }} $key" .sops.yaml
     fi
-    shopt -s nullglob
-    for f in secrets/*.yaml; do sops updatekeys --yes "$f"; done
+    shopt -s nullglob globstar
+    for f in secrets/**/*.yaml; do sops updatekeys --yes "$f"; done
     echo "Now list '*host-{{ name }}' under the creation_rules that should include it, and re-run updatekeys."
 
-# Edit (or create) an encrypted secrets file
+# Edit (or create) an encrypted secrets file: common | hosts/<name> | users/<name>
 secrets-edit file="common":
-    sops secrets/{{ file }}.yaml
+    mkdir -p "$(dirname secrets/{{ file }}.yaml)" && sops secrets/{{ file }}.yaml
 
 # Remove build results
 clean:
