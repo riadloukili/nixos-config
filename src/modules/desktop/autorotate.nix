@@ -40,7 +40,7 @@
               normal) t=0 ;; left-up) t=1 ;; bottom-up) t=2 ;; right-up) t=3 ;; *) return ;;
             esac
             [ "$tablet" = 1 ] || t=0   # laptop mode: always upright
-            hyprctl --batch "keyword monitor $output,transform,$t ; keyword input:touchdevice:transform $t ; keyword input:tablet:transform $t" >/dev/null
+            hyprctl eval "hl.monitor({ output = '$output', transform = $t }); hl.config({ input = { touchdevice = { transform = $t }, tablet = { transform = $t } } })" >/dev/null
           }
 
           {
