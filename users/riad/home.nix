@@ -26,6 +26,14 @@ let
     fi
     exit $status
   '';
+  # The shell's own area picker (region/freeze) captures internally and hands
+  # off to swappy, so the click comes from a swappy that plays the sound first.
+  swappy-shutter = pkgs.writeShellScriptBin "swappy" ''
+    setsid ${pkgs.pipewire}/bin/pw-play \
+      ${pkgs.sound-theme-freedesktop}/share/sounds/freedesktop/stereo/screen-capture.oga \
+      >/dev/null 2>&1 &
+    exec ${pkgs.swappy}/bin/swappy "$@"
+  '';
   caelestia-cli' =
     inputs.caelestia-shell.inputs.caelestia-cli.packages.${pkgs.system}.default.override
       {
@@ -214,6 +222,7 @@ in
     systemd.enable = false;
     package = inputs.caelestia-shell.packages.${pkgs.system}.with-cli.override {
       caelestia-cli = caelestia-cli';
+      swappy = swappy-shutter;
     };
     cli = {
       enable = true;
