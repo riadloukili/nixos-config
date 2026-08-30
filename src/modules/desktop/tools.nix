@@ -44,6 +44,7 @@
         imv
         zathura
         xdg-utils
+        (python3.withPackages (ps: [ ps.requests ])) # the dots' weather/scripts
         libsForQt5.qt5ct
         qt6Packages.qt6ct
         kdePackages.qtstyleplugin-kvantum
