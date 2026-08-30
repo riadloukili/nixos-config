@@ -13,23 +13,6 @@ let
   dotfiles = config.my.dotfiles.path;
   personal = "${config.home.homeDirectory}/personal";
   desktop = osConfig.programs.hyprland.enable;
-  # GTK theme named by the dotfiles; nixpkgs dropped its package (GTK2 engine), the
-  # GTK3/4/libadwaita parts are plain CSS so we take them straight from upstream.
-  flat-remix-gtk = pkgs.stdenvNoCC.mkDerivation {
-    pname = "flat-remix-gtk";
-    version = "2026-08";
-    src = pkgs.fetchFromGitHub {
-      owner = "daniruiz";
-      repo = "flat-remix-gtk";
-      rev = "919494f4f4ede88e2efb45cd48b98db7cc23f6ee";
-      hash = "sha256-EWe84bLG14RkCNbHp0S5FbUQ5/Ye/KbCk3gPTsGg9oQ=";
-    };
-    installPhase = ''
-      mkdir -p $out/share/themes
-      cp -r themes/Flat-Remix-GTK-Blue-Dark $out/share/themes/
-      cp -r themes/Flat-Remix-GTK-Blue-Light $out/share/themes/
-    '';
-  };
 in
 {
   imports = [ inputs.caelestia-shell.homeManagerModules.default ];
@@ -103,9 +86,7 @@ in
         freecad
         xournalpp
         remmina
-        flat-remix-icon-theme
-      ]
-      ++ lib.optional desktop flat-remix-gtk;
+      ];
 
     sessionVariables = {
       EDITOR = "nvim";
@@ -231,23 +212,8 @@ in
   home.file."Pictures/Wallpapers".source =
     config.lib.file.mkOutOfStoreSymlink "${personal}/wallpapers";
 
-  # The GTK theme and icons the dotfiles name (gtk-3.0/settings.ini). The
-  # gtk-4.0/gtk.css symlinks in the dotfiles point at ~/.themes, so expose the
-  # theme there too.
-  home.file.".themes/Flat-Remix-GTK-Blue-Dark".source =
-    "${flat-remix-gtk}/share/themes/Flat-Remix-GTK-Blue-Dark";
-
-  # GTK/Qt theming comes from the dotfiles (gtk-3.0, gtk-4.0, qt5ct, qt6ct, Kvantum);
-  # the cursor theme they name has to be installed and exported here.
-  # GTK4/libadwaita apps and the portal read the theme from gsettings, not
-  # from settings.ini.
-  dconf.settings."org/gnome/desktop/interface" = lib.mkIf desktop {
-    color-scheme = "prefer-dark";
-    gtk-theme = "Flat-Remix-GTK-Blue-Dark";
-    icon-theme = "Flat-Remix-Blue-Dark";
-    cursor-theme = "Bibata-Modern-Ice";
-    cursor-size = 24;
-  };
+  # GTK/Qt theming, icons (Papirus) and the colour scheme are caelestia's
+  # (caelestia scheme/wallpaper regenerate them); only the cursor is mine.
   home.pointerCursor = lib.mkIf desktop {
     enable = true;
     gtk.enable = false; # gtk-3.0/settings.ini in the dotfiles already names it

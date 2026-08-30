@@ -23,7 +23,6 @@
         pavucontrol
         networkmanagerapplet
         nwg-displays
-        nwg-look
         shikane
         wev
         loupe
@@ -34,9 +33,12 @@
         imv
         zathura
         xdg-utils
-        libsForQt5.qt5ct
-        qt6Packages.qt6ct
-        kdePackages.qtstyleplugin-kvantum
+        # theming caelestia drives: adw-gtk3 + Papirus for GTK, qtengine + Darkly for Qt
+        adw-gtk3
+        papirus-icon-theme
+        papirus-folders
+        qtengine
+        darkly
       ];
     };
 }
