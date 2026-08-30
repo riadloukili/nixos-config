@@ -13,6 +13,24 @@ let
   dotfiles = config.my.dotfiles.path;
   personal = "${config.home.homeDirectory}/personal";
   desktop = osConfig.programs.hyprland.enable;
+  # grim that plays a shutter sound on capture; caelestia's screenshot paths
+  # (Print, region, freeze) all shell out to grim, so the CLI is built with
+  # this one.
+  grim-shutter = pkgs.writeShellScriptBin "grim" ''
+    ${pkgs.grim}/bin/grim "$@"
+    status=$?
+    if [ $status -eq 0 ]; then
+      setsid ${pkgs.pipewire}/bin/pw-play \
+        ${pkgs.sound-theme-freedesktop}/share/sounds/freedesktop/stereo/screen-capture.oga \
+        >/dev/null 2>&1 &
+    fi
+    exit $status
+  '';
+  caelestia-cli' =
+    inputs.caelestia-shell.inputs.caelestia-cli.packages.${pkgs.system}.default.override
+      {
+        grim = grim-shutter;
+      };
 in
 {
   imports = [ inputs.caelestia-shell.homeManagerModules.default ];
@@ -194,7 +212,13 @@ in
   programs.caelestia = lib.mkIf desktop {
     enable = true;
     systemd.enable = false;
-    cli.enable = true;
+    package = inputs.caelestia-shell.packages.${pkgs.system}.with-cli.override {
+      caelestia-cli = caelestia-cli';
+    };
+    cli = {
+      enable = true;
+      package = caelestia-cli';
+    };
   };
 
   # Hyprland config is caelestia's own (flake input, read-only, updated with
