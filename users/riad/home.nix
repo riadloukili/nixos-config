@@ -111,10 +111,13 @@ in
 
     zsh = {
       enable = true;
+      # Keep HM's generated files in $HOME: ~/.config/zsh is my dotfiles' zsh/.
+      dotDir = config.home.homeDirectory;
       enableCompletion = true;
       autosuggestion.enable = true;
       syntaxHighlighting.enable = true;
       history = {
+        path = "${config.home.homeDirectory}/.zsh_history";
         size = 50000;
         ignoreDups = true;
         ignoreSpace = true;
