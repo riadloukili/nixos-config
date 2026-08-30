@@ -28,7 +28,8 @@
           link() { # link SRC DEST: replace DEST with a symlink to SRC, backing up a real file/dir
             local src=$1 dest=$2
             if [ -e "$dest" ] && [ ! -L "$dest" ]; then
-              local backup="$dest.hm-backup.$(date +%s)"
+              local backup
+              backup="$dest.hm-backup.$(date +%s)"
               echo "dotfiles: moving existing $dest to $backup" >&2
               mv -T "$dest" "$backup"
             fi
