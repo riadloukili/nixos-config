@@ -1,4 +1,4 @@
-# SDDM (Wayland) with the sddm-astronaut theme, colours and background as on
+# SDDM with the sddm-astronaut theme, colours and background as on
 # ceres (JaKooLit's "simple_sddm_2" is this theme). Password at the greeter;
 # fingerprint is for hyprlock/sudo.
 {
@@ -75,7 +75,9 @@
     {
       services.displayManager.sddm = {
         enable = true;
-        wayland.enable = true;
+        # The greeter runs under X11: SDDM's Wayland greeter draws no pointer on
+        # this machine. Sessions themselves are unaffected (Hyprland is Wayland).
+        wayland.enable = false;
         theme = "sddm-astronaut-theme";
         extraPackages = with pkgs.kdePackages; [
           qtsvg
