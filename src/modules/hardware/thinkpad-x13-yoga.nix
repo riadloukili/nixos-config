@@ -16,7 +16,6 @@
       mods.nixos.hardware.intel
       mods.nixos.hardware.fingerprint
       mods.nixos.hardware.convertible
-      mods.nixos.desktop.autorotate
     ];
     # Same throttling quirk as the Gen 3 entry (i5-1235U): U-series CPUs get
     # stuck around 1.3 GHz without it. Check with `journalctl -u throttled`.

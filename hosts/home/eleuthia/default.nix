@@ -7,6 +7,7 @@
       users.riad
       boot.systemd-boot
       hardware.thinkpad-x13-yoga
+      desktop.autorotate # rotate the screen when folded into a tablet
     ];
 
     system.stateVersion = "26.11";
