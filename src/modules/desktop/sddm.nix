@@ -93,6 +93,7 @@
           };
         };
       };
+      services.xserver.enable = true; # the X11 greeter needs it; sessions stay Wayland
       environment.systemPackages = [
         theme
         pkgs.bibata-cursors
