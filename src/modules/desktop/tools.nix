@@ -18,6 +18,7 @@
         wl-clipboard
         cliphist
         fuzzel # caelestia's clipboard/emoji picker
+        hyprpicker # colour picker (SUPER+SHIFT+C)
         brightnessctl
         playerctl
         pavucontrol
