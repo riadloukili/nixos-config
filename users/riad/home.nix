@@ -173,6 +173,11 @@ in
     };
   };
 
+  # The dots' rofi config and theme selector expect the themes under
+  # ~/.local/share/rofi/themes; they live in the dotfiles.
+  home.file.".local/share/rofi/themes".source =
+    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/rofi/themes";
+
   # GTK/Qt theming comes from the dotfiles (gtk-3.0, gtk-4.0, qt5ct, qt6ct, Kvantum);
   # the cursor theme they name has to be installed and exported here.
   home.pointerCursor = lib.mkIf desktop {

@@ -82,9 +82,19 @@
           qtmultimedia
           qtvirtualkeyboard
         ];
-        settings.General.InputMethod = "qtvirtualkeyboard";
+        settings = {
+          General.InputMethod = "qtvirtualkeyboard";
+          # Without a cursor theme the Wayland greeter shows no pointer at all.
+          Theme = {
+            CursorTheme = "Bibata-Modern-Ice";
+            CursorSize = 24;
+          };
+        };
       };
-      environment.systemPackages = [ theme ];
+      environment.systemPackages = [
+        theme
+        pkgs.bibata-cursors
+      ];
       security.pam.services.sddm.fprintAuth = false;
     };
 }
