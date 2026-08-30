@@ -15,6 +15,7 @@
       environment.systemPackages = with pkgs; [
         waybar
         swaynotificationcenter
+        libnotify # notify-send, used by the dots for every OSD
         rofi
         wlogout
         hyprpolkitagent
