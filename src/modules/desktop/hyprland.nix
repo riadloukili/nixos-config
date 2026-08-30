@@ -13,6 +13,9 @@
       # The uwsm session is the one that owns graphical-session.target (portals,
       # user services, env import); the plain "hyprland" entry starts none of that.
       services.displayManager.defaultSession = "hyprland-uwsm";
+      # Chromium/Electron apps (brave, discord, vscode, ...) run natively on
+      # Wayland; needed for screen sharing through the portal.
+      environment.sessionVariables.NIXOS_OZONE_WL = "1";
       xdg.portal = {
         enable = true;
         extraPortals = [ pkgs.xdg-desktop-portal-gtk ];

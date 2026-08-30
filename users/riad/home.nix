@@ -79,7 +79,7 @@ in
         uv
         go
         rustup
-        brave
+        (brave.override { commandLineArgs = [ "--enable-features=WebRTCPipeWireCapturer" ]; }) # screen sharing via the portal
         discord
         vlc
         (mpv.override { scripts = [ mpvScripts.mpris ]; })
