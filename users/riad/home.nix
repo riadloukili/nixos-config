@@ -111,6 +111,7 @@ in
       EDITOR = "nvim";
       VISUAL = "nvim";
       STARSHIP_CONFIG = lib.mkForce "${dotfiles}/starship/starship.toml"; # the HM module points at ~/.config/starship.toml
+      CAELESTIA_DOTS = "${inputs.caelestia-dots}"; # nvim takes its colourscheme from here
     };
     shellAliases = {
       vi = "nvim";
