@@ -38,6 +38,9 @@ let
     inputs.caelestia-shell.inputs.caelestia-cli.packages.${pkgs.system}.default.override
       {
         grim = grim-shutter;
+        # Don't bundle the CLI's own copy of the shell: `caelestia shell` must
+        # find caelestia-shell on the profile PATH (the overridden one below).
+        withShell = false;
       };
 in
 {
