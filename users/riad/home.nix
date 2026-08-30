@@ -202,11 +202,6 @@ in
     };
   };
 
-  # The dots' rofi config and theme selector expect the themes under
-  # ~/.local/share/rofi/themes; they live in the dotfiles.
-  home.file.".local/share/rofi/themes".source =
-    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/rofi/themes";
-
   # The GTK theme and icons the dotfiles name (gtk-3.0/settings.ini). The
   # gtk-4.0/gtk.css symlinks in the dotfiles point at ~/.themes, so expose the
   # theme there too.
@@ -215,6 +210,15 @@ in
 
   # GTK/Qt theming comes from the dotfiles (gtk-3.0, gtk-4.0, qt5ct, qt6ct, Kvantum);
   # the cursor theme they name has to be installed and exported here.
+  # GTK4/libadwaita apps and the portal read the theme from gsettings, not
+  # from settings.ini.
+  dconf.settings."org/gnome/desktop/interface" = lib.mkIf desktop {
+    color-scheme = "prefer-dark";
+    gtk-theme = "Flat-Remix-GTK-Blue-Dark";
+    icon-theme = "Flat-Remix-Blue-Dark";
+    cursor-theme = "Bibata-Modern-Ice";
+    cursor-size = 24;
+  };
   home.pointerCursor = lib.mkIf desktop {
     enable = true;
     gtk.enable = false; # gtk-3.0/settings.ini in the dotfiles already names it

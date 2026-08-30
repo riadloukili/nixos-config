@@ -21,7 +21,6 @@
         hyprpolkitagent
         kitty
         awww
-        wallust
         grim
         slurp
         swappy

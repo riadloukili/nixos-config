@@ -7,17 +7,12 @@
     let
       theme =
         (pkgs.sddm-astronaut.override {
+          # Only what differs from the theme's Themes/astronaut.conf.
           themeConfig = {
             Background = "Backgrounds/riad.png";
-            FontSize = "13";
-            KeyboardSize = "0.4";
-            RoundCorners = "20";
             HourFormat = "hh:mm AP";
-            DateFormat = "dddd d MMMM";
-            DimBackground = "0.0";
-            CropBackground = true;
-            BackgroundHorizontalAlignment = "center";
-            BackgroundVerticalAlignment = "center";
+            FormPosition = "left";
+            BlurMax = "32";
             HeaderTextColor = "#694327";
             DateTextColor = "#694327";
             TimeTextColor = "#694327";
@@ -31,38 +26,19 @@
             UserIconColor = "#82502B";
             PasswordIconColor = "#82502B";
             PlaceholderTextColor = "#82502B";
-            WarningColor = "#343746";
-            LoginButtonTextColor = "#ffffff";
             LoginButtonBackgroundColor = "#24152A";
             SystemButtonsIconsColor = "#694327";
             SessionButtonTextColor = "#694327";
             VirtualKeyboardButtonTextColor = "#694327";
-            DropdownTextColor = "#ffffff";
             DropdownSelectedBackgroundColor = "#694327";
             DropdownBackgroundColor = "#444242";
             HighlightTextColor = "#211C1A";
             HighlightBackgroundColor = "#34251C";
-            HighlightBorderColor = "#343746";
             HoverUserIconColor = "#82502B";
             HoverPasswordIconColor = "#82502B";
             HoverSystemButtonsIconsColor = "#694327";
             HoverSessionButtonTextColor = "#694327";
             HoverVirtualKeyboardButtonTextColor = "#694327";
-            PartialBlur = true;
-            BlurMax = "32";
-            HaveFormBackground = false;
-            FormPosition = "left";
-            VirtualKeyboardPosition = "center";
-            HideVirtualKeyboard = false;
-            HideSystemButtons = false;
-            HideLoginButton = false;
-            ForceLastUser = true;
-            PasswordFocus = true;
-            HideCompletePassword = true;
-            AllowEmptyPassword = false;
-            AllowUppercaseLettersInUsernames = false;
-            BypassSystemButtonsChecks = false;
-            RightToLeftLayout = false;
           };
         }).overrideAttrs
           (old: {
