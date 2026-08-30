@@ -4,6 +4,15 @@
     { pkgs, ... }:
     {
       hardware.sensor.iio.enable = true; # iio-sensor-proxy: accelerometer over D-Bus
+      # iio-sensor-proxy only lets active local sessions claim the sensor; the
+      # rotate service below runs outside a session, so allow desktop users.
+      security.polkit.extraConfig = ''
+        polkit.addRule(function (action, subject) {
+          if (action.id.indexOf("net.hadess.SensorProxy.") == 0 && subject.isInGroup("input")) {
+            return polkit.Result.YES;
+          }
+        });
+      '';
       services.libinput.enable = true;
       environment.systemPackages = with pkgs; [
         wvkbd
