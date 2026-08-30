@@ -74,6 +74,12 @@
         theme
         pkgs.bibata-cursors
       ];
-      security.pam.services.sddm.fprintAuth = false;
+      # Password at the greeter: SDDM's PAM stack includes "login", so both opt
+      # out, otherwise pam_fprintd prompts first and the typed password is ignored
+      # until it times out. Fingerprint stays for sudo, polkit and the lock screen.
+      security.pam.services = {
+        sddm.fprintAuth = false;
+        login.fprintAuth = false;
+      };
     };
 }
