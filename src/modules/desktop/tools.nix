@@ -1,41 +1,31 @@
-# The programs a Wayland desktop needs to function (bar, launcher,
-# notifications, lock/idle, polkit, terminal, screenshots, clipboard, controls,
-# wallpaper/theming, files, monitors). Their configs come from each user's dotfiles.
+# The programs a Wayland desktop needs around the shell (polkit, terminal,
+# screenshots, clipboard, pickers, controls, files, monitors, theming). The
+# shell itself (bar, launcher, notifications, lock, idle, OSD, wallpaper) is
+# caelestia, set up per user (users/riad/home.nix).
 {
   flake.modules.nixos."desktop/tools" =
-    { config, pkgs, ... }:
+    { pkgs, ... }:
     {
-      programs = {
-        # Package + PAM service; also runs hypridle as a user service (so no exec-once for it).
-        hyprlock.enable = true;
-        thunar.enable = true; # package + gvfs/tumbler wiring
-      };
-      security.pam.services.hyprlock.fprintAuth = config.services.fprintd.enable;
+      programs.thunar.enable = true; # package + gvfs/tumbler wiring
 
       environment.systemPackages = with pkgs; [
-        waybar
-        swaynotificationcenter
-        libnotify # notify-send, used by the dots for every OSD
-        rofi
-        wlogout
+        libnotify # notify-send
         hyprpolkitagent
         kitty
-        awww
         grim
         slurp
         swappy
         wl-clipboard
         cliphist
+        fuzzel # caelestia's clipboard/emoji picker
         brightnessctl
         playerctl
-        pamixer
         pavucontrol
         networkmanagerapplet
         nwg-displays
         nwg-look
         shikane
         wev
-        yad
         loupe
         file-roller
         gnome-system-monitor
@@ -44,7 +34,6 @@
         imv
         zathura
         xdg-utils
-        (python3.withPackages (ps: [ ps.requests ])) # the dots' weather/scripts
         libsForQt5.qt5ct
         qt6Packages.qt6ct
         kdePackages.qtstyleplugin-kvantum

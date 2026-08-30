@@ -30,6 +30,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Desktop shell (Quickshell) and the Hyprland config it ships with.
+    caelestia-shell = {
+      url = "github:caelestia-dots/shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    caelestia-dots = {
+      url = "github:caelestia-dots/caelestia";
+      flake = false;
+    };
+
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";

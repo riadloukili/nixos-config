@@ -1,8 +1,9 @@
 # riad's home-manager config: my shell, editor and tools. Program configs
-# (hypr, waybar, nvim, tmux, ...) come from ~/personal/dotfiles via
+# (caelestia, nvim, tmux, ...) come from ~/personal/dotfiles via
 # src/modules/dotfiles.nix; anything missing there uses the program's defaults.
 {
   config,
+  inputs,
   lib,
   osConfig,
   pkgs,
@@ -10,6 +11,7 @@
 }:
 let
   dotfiles = config.my.dotfiles.path;
+  personal = "${config.home.homeDirectory}/personal";
   desktop = osConfig.programs.hyprland.enable;
   # GTK theme named by the dotfiles; nixpkgs dropped its package (GTK2 engine), the
   # GTK3/4/libadwaita parts are plain CSS so we take them straight from upstream.
@@ -30,6 +32,8 @@ let
   };
 in
 {
+  imports = [ inputs.caelestia-shell.homeManagerModules.default ];
+
   home = {
     username = "riad";
     homeDirectory = "/home/riad";
@@ -106,6 +110,7 @@ in
     sessionVariables = {
       EDITOR = "nvim";
       VISUAL = "nvim";
+      STARSHIP_CONFIG = lib.mkForce "${dotfiles}/starship/starship.toml"; # the HM module points at ~/.config/starship.toml
     };
     shellAliases = {
       vi = "nvim";
@@ -161,18 +166,11 @@ in
           "history"
         ];
       };
-      plugins = [
-        {
-          name = "powerlevel10k";
-          src = pkgs.zsh-powerlevel10k;
-          file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
-        }
-      ];
       initContent = ''
-        [[ -f "${dotfiles}/zsh/p10k.zsh" ]] && source "${dotfiles}/zsh/p10k.zsh"
         [[ -f "${dotfiles}/zsh/zshrc.local" ]] && source "${dotfiles}/zsh/zshrc.local"
       '';
     };
+    starship.enable = true; # prompt; config is the dotfiles' starship/starship.toml
 
     git = {
       enable = true;
@@ -201,6 +199,36 @@ in
       flags = [ "--disable-up-arrow" ];
     };
   };
+
+  # Desktop shell: caelestia (Quickshell) with its CLI. Their execs.lua starts
+  # the shell from Hyprland, so no user service. shell.json and my Hyprland
+  # overrides (hypr-vars.lua, hypr-user.lua) are the dotfiles' caelestia/.
+  programs.caelestia = lib.mkIf desktop {
+    enable = true;
+    systemd.enable = false;
+    cli.enable = true;
+  };
+
+  # Hyprland config is caelestia's own (flake input, read-only, updated with
+  # the lock), linked entry by entry: scheme/current.lua (written by the CLI)
+  # and monitors.lua (nwg-displays) stay real files next to them.
+  xdg.configFile = lib.mkIf desktop (
+    lib.genAttrs
+      [
+        "hypr/hyprland.lua"
+        "hypr/variables.lua"
+        "hypr/hyprland"
+        "hypr/utils"
+        "hypr/scheme/default.lua"
+      ]
+      (entry: {
+        source = "${inputs.caelestia-dots}/${entry}";
+      })
+  );
+
+  # Wallpapers: a private repo, cloned like the dotfiles; caelestia looks in ~/Pictures/Wallpapers.
+  home.file."Pictures/Wallpapers".source =
+    config.lib.file.mkOutOfStoreSymlink "${personal}/wallpapers";
 
   # The GTK theme and icons the dotfiles name (gtk-3.0/settings.ini). The
   # gtk-4.0/gtk.css symlinks in the dotfiles point at ~/.themes, so expose the
