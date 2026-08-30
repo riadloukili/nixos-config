@@ -57,7 +57,7 @@
         };
         check-added-large-files = {
           enable = true;
-          args = [ "--maxkb=4096" ]; # the SDDM background image
+          args = [ "--maxkb=65536" ]; # SDDM background image, encrypted font tarball
         };
         check-merge-conflicts.enable = true;
       };

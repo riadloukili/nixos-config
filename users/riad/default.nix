@@ -12,6 +12,8 @@
     { config, lib, ... }:
     let
       secrets = config.my.secrets.file "users/riad.yaml";
+      # Paid fonts (Comic Code): an encrypted tarball, unpacked by home.nix.
+      fonts = config.my.secrets.file "users/riad/fonts.tar.xz";
     in
     {
       imports = [ mods.nixos.secrets ];
@@ -32,24 +34,33 @@
         hashedPasswordFile = lib.mkIf (secrets != null) config.sops.secrets.riad-password.path;
       };
 
-      sops.secrets = lib.mkIf (secrets != null) {
-        riad-password = {
-          sopsFile = secrets;
-          key = "password";
-          neededForUsers = true;
-        };
-        riad-ssh-key = {
-          sopsFile = secrets;
-          key = "ssh-private-key";
-          owner = "riad";
-        };
-        riad-ssh-key-pub = {
-          sopsFile = secrets;
-          key = "ssh-public-key";
-          owner = "riad";
-          mode = "0444";
-        };
-      };
+      sops.secrets = lib.mkMerge [
+        (lib.mkIf (secrets != null) {
+          riad-password = {
+            sopsFile = secrets;
+            key = "password";
+            neededForUsers = true;
+          };
+          riad-ssh-key = {
+            sopsFile = secrets;
+            key = "ssh-private-key";
+            owner = "riad";
+          };
+          riad-ssh-key-pub = {
+            sopsFile = secrets;
+            key = "ssh-public-key";
+            owner = "riad";
+            mode = "0444";
+          };
+        })
+        (lib.mkIf (fonts != null) {
+          riad-fonts = {
+            sopsFile = fonts;
+            format = "binary";
+            owner = "riad";
+          };
+        })
+      ];
 
       home-manager.users.riad = ./home.nix;
     };

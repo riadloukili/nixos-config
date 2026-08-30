@@ -126,6 +126,16 @@ in
     fi
   '';
 
+  # Paid fonts (Comic Code) come encrypted from secrets/users/riad/fonts.tar.xz;
+  # the host decrypts to /run/secrets/riad-fonts, unpack into the user font dir.
+  home.activation.privateFonts = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if [ -r /run/secrets/riad-fonts ]; then
+      run mkdir -p "$HOME/.local/share/fonts/private"
+      run ${pkgs.gnutar}/bin/tar -xJf /run/secrets/riad-fonts -C "$HOME/.local/share/fonts/private"
+      run ${pkgs.fontconfig}/bin/fc-cache -f "$HOME/.local/share/fonts/private" >/dev/null
+    fi
+  '';
+
   programs = {
     home-manager.enable = true;
 

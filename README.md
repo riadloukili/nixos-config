@@ -88,7 +88,9 @@ sops-nix with age; every recipient is an ed25519 SSH key converted with `ssh-to-
 
 ## Dotfiles
 
-Program configs are not in this repo. `src/modules/dotfiles.nix` links every top-level directory of the checkout at `~/personal/dotfiles` ([riadloukili/dotfiles](https://github.com/riadloukili/dotfiles)) into `~/.config/<name>` at activation — live symlinks, so editing needs no rebuild. No checkout, or no `hypr/` in it → Hyprland (or waybar, nvim, tmux, …) runs with its own built-in defaults. Set `my.dotfiles.path` per user to use a different repo.
+Program configs are not in this repo. `src/modules/dotfiles.nix` links the checkout at `~/personal/dotfiles` ([riadloukili/dotfiles](https://github.com/riadloukili/dotfiles)) in at activation: every top-level directory → `~/.config/<name>`, and everything under `home/` → `~/<name>` (for things living outside `~/.config`, e.g. `home/.themes`). Live symlinks, so editing needs no rebuild. No checkout, or no `hypr/` in it → Hyprland (or waybar, nvim, tmux, …) runs with its own built-in defaults. Set `my.dotfiles.path` per user to use a different repo.
+
+Private files that must not be public (paid fonts) travel as binary sops secrets under `secrets/users/<name>/` (e.g. `fonts.tar.xz`, readable by the user's key and their hosts); `users/riad/default.nix` declares them and `home.nix` unpacks them at activation.
 
 ## Editor
 

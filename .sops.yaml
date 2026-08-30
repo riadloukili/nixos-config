@@ -16,6 +16,7 @@
 #   secrets/hosts/<name>.yaml   one host       (rule: [*user-riad, *host-<name>])
 #   secrets/users/common.yaml   every user
 #   secrets/users/<name>.yaml   one user       (rule: [*user-<name>, hosts the user is on])
+#   secrets/users/<name>/*      one user, binary blobs (same recipients)
 keys:
   - &user-riad age10lja78hfccgn20p7gvy7gahmjt5nhw4vgdk830gcmd499dc5vpjs56vx4x
   - &host-eleuthia age190vlwmgk838afm7thk23n74wjvrhrlmrwa6dw8gkh8glawjxcujsnpye78
@@ -46,6 +47,13 @@ creation_rules:
           - *host-eleuthia
           - *master
   - path_regex: secrets/users/riad\.yaml$
+    key_groups:
+      - age:
+          - *user-riad
+          - *host-eleuthia
+          - *master
+  # Binary blobs for riad (e.g. paid fonts): secrets/users/riad/<file>
+  - path_regex: secrets/users/riad/.*
     key_groups:
       - age:
           - *user-riad
