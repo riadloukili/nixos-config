@@ -50,6 +50,7 @@ in
         tmux
         lazygit
         lazydocker
+        diff-so-fancy
         nixd
         nixfmt
         sops
