@@ -10,6 +10,9 @@
         withUWSM = true;
         xwayland.enable = true;
       };
+      # The uwsm session is the one that owns graphical-session.target (portals,
+      # user services, env import); the plain "hyprland" entry starts none of that.
+      services.displayManager.defaultSession = "hyprland-uwsm";
       xdg.portal = {
         enable = true;
         extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
