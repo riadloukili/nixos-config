@@ -16,6 +16,7 @@
       desktop.envfs
       desktop.flatpak
       hardware.firmware
+      nix-ld
     ];
   };
 }
