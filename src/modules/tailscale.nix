@@ -1,10 +1,11 @@
-# Tailscale client; joins with `tailscale-auth-key` from secrets/hosts/common.yaml once it exists.
+# Tailscale client; joins with `tailscale-auth-key` from secrets/hosts/common.yaml
+# once that key is enrolled (nothing is declared until then).
 { mods, ... }:
 {
   flake.modules.nixos."tailscale" =
     { config, lib, ... }:
     let
-      secrets = config.my.secrets.file "hosts/common.yaml";
+      secrets = config.my.secrets.key "hosts/common.yaml" "tailscale-auth-key";
     in
     {
       imports = [ mods.nixos.secrets ];
