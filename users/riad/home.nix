@@ -118,7 +118,17 @@ in
         discord
         vlc
         (mpv.override { scripts = [ mpvScripts.mpris ]; })
-        freecad
+        # The addon manager can't pip-install dependencies into the store, so
+        # ship the Python modules addons ask for inside FreeCAD's own
+        # interpreter instead (lxml: addon manager; requests: FreeCAD-Ribbon).
+        (freecad.customize {
+          pythons = [
+            (ps: [
+              ps.lxml
+              ps.requests
+            ])
+          ];
+        })
         xournalpp
         remmina
       ];
