@@ -84,6 +84,7 @@ in
         lazygit
         lazydocker
         diff-so-fancy
+        tree-sitter # nvim-treesitter (LazyVim, main branch) compiles parsers with it
         nixd
         nixfmt
         sops
