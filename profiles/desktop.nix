@@ -14,6 +14,7 @@
       desktop.keyboard
       desktop.network
       desktop.envfs
+      desktop.flatpak
     ];
   };
 }
