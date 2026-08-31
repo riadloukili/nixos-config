@@ -15,6 +15,7 @@
       desktop.network
       desktop.envfs
       desktop.flatpak
+      hardware.firmware
     ];
   };
 }
