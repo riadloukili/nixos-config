@@ -22,7 +22,6 @@
         brightnessctl
         playerctl
         pavucontrol
-        networkmanagerapplet
         nwg-displays
         shikane
         wev
