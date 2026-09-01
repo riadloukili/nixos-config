@@ -3,6 +3,8 @@
 #   <checkout>/<name>/      → ~/.config/<name>   (program configs)
 #   <checkout>/home/<name>  → ~/<name>           (anything living outside ~/.config,
 #                                                 e.g. home/.themes, home/.local/share/fonts)
+# ~/bin is on PATH, so home/bin is where the checkout's own scripts go (shikane
+# profiles call wks-range by name, for one).
 # Missing checkout or missing entry → the program uses its own built-in
 # defaults; nothing is shipped from this repo. Links are live, so editing the
 # checkout needs no rebuild. The directory list is only known at activation
@@ -57,6 +59,8 @@
       };
 
       config = {
+        home.sessionPath = [ "${config.home.homeDirectory}/bin" ];
+
         assertions = [
           {
             assertion = lib.hasPrefix "/" cfg.path;
