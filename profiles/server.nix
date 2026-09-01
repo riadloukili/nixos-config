@@ -1,16 +1,16 @@
-{ config, pkgs, lib, ... }:
-
+# Headless machine (homelab or cloud): runs containers, updates itself from main.
+{ mods, ... }:
 {
-  imports = [
-    ./base.nix
-    ../modules/services/docker.nix
-    ../modules/services/auto-update.nix
-  ];
-
-  mySystem.docker = {
-    enable = true;
-    rootless = true;
-    composePackage = true;
-    enablePrivilegedPorts = true;
+  flake.modules.nixos."profiles/server" = {
+    imports = with mods.nixos; [
+      profiles.base
+      docker
+      auto-update
+      tailscale
+    ];
+    networking.nameservers = [
+      "1.1.1.1"
+      "9.9.9.9"
+    ];
   };
 }

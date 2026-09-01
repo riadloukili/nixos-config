@@ -1,0 +1,61 @@
+# Recipients, all derived from ed25519 SSH keys with ssh-to-age:
+#   user-<name>   the person's single SSH keypair (stored in secrets/users/<name>.yaml and
+#                 provisioned to every host listed on that file; the age identity
+#                 ~/.config/sops/age/keys.txt is derived from it at home-manager activation)
+#   host-<name>   a machine's key (/etc/ssh/ssh_host_ed25519_key.pub, or
+#                 `just sops-add-host <name> <ip>`)
+#   master        offline recovery key (age-keygen; private half lives only in
+#                 the password manager) — listed on every file
+# Add a key under `keys:`, then list it in the rules that should include it,
+# then `sops updatekeys --yes secrets/**/*.yaml` from a machine that can already decrypt.
+#
+# Files by scope (hosts decrypt all of them at boot; a user file is also
+# readable by that user):
+#   secrets/common.yaml         everything
+#   secrets/hosts/common.yaml   every host
+#   secrets/hosts/<name>.yaml   one host       (rule: [*user-riad, *host-<name>])
+#   secrets/users/common.yaml   every user
+#   secrets/users/<name>.yaml   one user       (rule: [*user-<name>, hosts the user is on])
+#   secrets/users/<name>/*      one user, binary blobs (same recipients)
+keys:
+  - &user-riad age10lja78hfccgn20p7gvy7gahmjt5nhw4vgdk830gcmd499dc5vpjs56vx4x
+  - &host-eleuthia age190vlwmgk838afm7thk23n74wjvrhrlmrwa6dw8gkh8glawjxcujsnpye78
+  - &master age1nvt6kzcc33regum2y29exawr09dtsqgjs3d5mm70hmckd2jvy44qgdaxgt
+creation_rules:
+  - path_regex: secrets/common\.yaml$
+    key_groups:
+      - age:
+          - *user-riad
+          - *host-eleuthia
+          - *master
+  - path_regex: secrets/hosts/common\.yaml$
+    key_groups:
+      - age:
+          - *user-riad
+          - *host-eleuthia
+          - *master
+  - path_regex: secrets/hosts/eleuthia\.yaml$
+    key_groups:
+      - age:
+          - *user-riad
+          - *host-eleuthia
+          - *master
+  - path_regex: secrets/users/common\.yaml$
+    key_groups:
+      - age:
+          - *user-riad
+          - *host-eleuthia
+          - *master
+  - path_regex: secrets/users/riad\.yaml$
+    key_groups:
+      - age:
+          - *user-riad
+          - *host-eleuthia
+          - *master
+  # Binary blobs for riad (e.g. paid fonts): secrets/users/riad/<file>
+  - path_regex: secrets/users/riad/.*
+    key_groups:
+      - age:
+          - *user-riad
+          - *host-eleuthia
+          - *master
