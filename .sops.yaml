@@ -19,7 +19,7 @@
 #   secrets/users/<name>/*      one user, binary blobs (same recipients)
 keys:
   - &user-riad age10lja78hfccgn20p7gvy7gahmjt5nhw4vgdk830gcmd499dc5vpjs56vx4x
-  - &host-eleuthia age190vlwmgk838afm7thk23n74wjvrhrlmrwa6dw8gkh8glawjxcujsnpye78
+  - &host-eleuthia age10g2ez6d4l5dl4z5hm757l998slr22cvjfpsjtmhy2vrd5eaw6ddszx7xkr
   - &master age1nvt6kzcc33regum2y29exawr09dtsqgjs3d5mm70hmckd2jvy44qgdaxgt
 creation_rules:
   - path_regex: secrets/common\.yaml$
