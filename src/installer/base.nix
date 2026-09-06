@@ -42,6 +42,12 @@
           nixos.enable = lib.mkForce false;
         };
 
+        # installation-device.nix autologins `nixos`, which is disabled just
+        # above — and it sets that without mkDefault, hence the mkForce.
+        # Without this getty tries to log in an account that does not exist,
+        # fails, respawns, and the boot looks like it hangs.
+        services.getty.autologinUser = lib.mkForce "riad";
+
         environment.systemPackages = [
           inputs.disko.packages.${pkgs.stdenv.hostPlatform.system}.disko
           pkgs.git
