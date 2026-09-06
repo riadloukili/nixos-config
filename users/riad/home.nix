@@ -260,6 +260,14 @@ in
       })
   );
 
+  # Mount removable drives on plug. udisks2 will do it but nothing asks it to:
+  # there is no desktop volume manager here, and caelestia's shell does not
+  # handle disks. No tray icon — the bar is caelestia's.
+  services.udiskie = lib.mkIf desktop {
+    enable = true;
+    tray = "never";
+  };
+
   # Wallpapers: a private repo, cloned like the dotfiles; caelestia looks in ~/Pictures/Wallpapers.
   home.file."Pictures/Wallpapers".source =
     config.lib.file.mkOutOfStoreSymlink "${personal}/wallpapers";

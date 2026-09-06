@@ -6,7 +6,13 @@
   flake.modules.nixos."desktop/tools" =
     { pkgs, ... }:
     {
-      programs.thunar.enable = true; # package + gvfs/tumbler wiring
+      programs.thunar.enable = true; # the package and its dbus service
+
+      # Thunar lists removable drives through gvfs-udisks2-volume-monitor; the
+      # thunar module does not pull gvfs in, so without this the sidebar shows
+      # no devices and there is nothing to click to mount or eject. Mounting
+      # them on plug is riad's udiskie (users/riad/home.nix).
+      services.gvfs.enable = true;
 
       environment.systemPackages = with pkgs; [
         libnotify # notify-send
