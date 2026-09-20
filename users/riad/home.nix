@@ -97,6 +97,7 @@ in
         mermaid-cli
         awscli2
         azure-cli
+        openfortivpn # needs root for the tun device: sudo openfortivpn
         llm-agents.claude-code
         llm-agents.codex
         llm-agents.ccusage
@@ -118,6 +119,7 @@ in
             "--enable-usermedia-screen-capturing"
           ];
         })
+        firefox
         discord
         vlc
         (mpv.override { scripts = [ mpvScripts.mpris ]; })
