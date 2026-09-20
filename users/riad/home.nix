@@ -277,7 +277,20 @@ in
     config.lib.file.mkOutOfStoreSymlink "${personal}/wallpapers";
 
   # GTK/Qt theming, icons (Papirus) and the colour scheme are caelestia's
-  # (caelestia scheme/wallpaper regenerate them); only the cursor is mine.
+  # (caelestia scheme/wallpaper regenerate them); only the cursor and the UI
+  # font are mine.
+  #
+  # The font matters beyond GTK apps: Firefox resolves CSS system-ui through
+  # GTK's font setting, and with nothing set about:newtab and the onboarding
+  # page fall back to its built-in serif. caelestia writes only gtk.css, so
+  # settings.ini is free for us.
+  gtk = lib.mkIf desktop {
+    enable = true;
+    font = {
+      name = "Google Sans"; # what sans-serif already resolves to here
+      size = 11;
+    };
+  };
   home.pointerCursor = lib.mkIf desktop {
     enable = true;
     gtk.enable = false; # gtk-3.0/settings.ini in the dotfiles already names it
