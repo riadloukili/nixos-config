@@ -1,0 +1,20 @@
+name: Check
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: DeterminateSystems/magic-nix-cache-action@v9
+      # Formatting, lints, hooks and every host closure.
+      - run: nix flake check --accept-flake-config -L
+      # Installer images (they embed the host closures built above).
+      - run: nix build --accept-flake-config -L .#iso-server .#iso-eleuthia
