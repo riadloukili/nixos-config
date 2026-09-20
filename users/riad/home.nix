@@ -113,6 +113,24 @@ let
       ${pkgs.sound-theme-freedesktop}/share/sounds/freedesktop/stereo/audio-volume-change.oga \
       >/dev/null 2>&1 &
   '';
+  # KeePassXC, started once there is a tray to start into. Qt asks the
+  # StatusNotifierWatcher to register its icon exactly once, at startup, and
+  # does not retry: launched from the Hyprland start hook it beats caelestia's
+  # bar to the bus, registers nothing, and since it also starts minimized it
+  # looks like it never started at all. Waiting on the well-known name is the
+  # honest version of "sleep a bit" -- it proceeds the moment the bar owns it.
+  #
+  # The timeout is a backstop: if no bar ever appears, still start, so a
+  # locked database and browser integration do not depend on the shell.
+  keepassxc-tray = pkgs.writeShellScriptBin "keepassxc-tray" ''
+    for _ in $(seq 1 100); do
+      ${pkgs.systemd}/bin/busctl --user call org.freedesktop.DBus \
+        /org/freedesktop/DBus org.freedesktop.DBus NameHasOwner \
+        s org.kde.StatusNotifierWatcher 2>/dev/null | grep -q true && break
+      sleep 0.2
+    done
+    exec ${pkgs.keepassxc}/bin/keepassxc "$@"
+  '';
   caelestia-cli' =
     inputs.caelestia-shell.inputs.caelestia-cli.packages.${pkgs.system}.default.override
       {
@@ -206,6 +224,7 @@ in
         # ticking a browser fails, and unticking it deletes the link outright
         # (removing a symlink only needs write access to the directory).
         keepassxc
+        keepassxc-tray
         discord
         vlc
         (mpv.override { scripts = [ mpvScripts.mpris ]; })
