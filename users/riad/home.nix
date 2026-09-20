@@ -120,6 +120,14 @@ in
           ];
         })
         firefox
+        # Browser integration needs a native messaging manifest per browser.
+        # KeePassXC writes those itself when you tick a browser under
+        # Settings > Browser Integration, and rewrites them at every launch
+        # so the proxy's store path stays current. Linking them from the
+        # package instead looks tidier but loses: they are then read-only,
+        # ticking a browser fails, and unticking it deletes the link outright
+        # (removing a symlink only needs write access to the directory).
+        keepassxc
         discord
         vlc
         (mpv.override { scripts = [ mpvScripts.mpris ]; })
