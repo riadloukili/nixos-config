@@ -48,6 +48,19 @@
             name=''${src##*/}
             link "$src" "$home/$name"
           done
+          # Fonts are copied, not linked, into a standard font directory.
+          # Firefox's sandboxed content processes (about:newtab and friends)
+          # only read fonts from the well-known paths and resolve symlinks, so
+          # a font left in the checkout is found by fontconfig but unusable
+          # there: the page falls back to serif while the parent process, which
+          # is unsandboxed, renders it correctly.
+          if [ -d "$checkout/fonts" ]; then
+            dest=$home/.local/share/fonts/dotfiles
+            mkdir -p "$(dirname "$dest")"
+            rm -rf "$dest"
+            cp -rL "$checkout/fonts" "$dest"
+            fc-cache -f "$dest" >/dev/null 2>&1 || :
+          fi
         '';
       };
     in
