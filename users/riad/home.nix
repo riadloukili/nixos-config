@@ -13,6 +13,8 @@ let
   dotfiles = config.my.dotfiles.path;
   personal = "${config.home.homeDirectory}/personal";
   desktop = osConfig.programs.hyprland.enable;
+  # The LLM CLIs move faster than nixpkgs tracks them (see flake.nix).
+  llm-agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
   # grim that plays a shutter sound on capture; caelestia's screenshot paths
   # (Print, region, freeze) all shell out to grim, so the CLI is built with
   # this one.
@@ -95,9 +97,9 @@ in
         mermaid-cli
         awscli2
         azure-cli
-        claude-code
-        codex
-        ccusage
+        llm-agents.claude-code
+        llm-agents.codex
+        llm-agents.ccusage
       ]
       ++ lib.optionals desktop [
         # dev toolchains and apps: workstations only

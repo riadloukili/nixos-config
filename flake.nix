@@ -40,6 +40,11 @@
       flake = false;
     };
 
+    # Claude Code ships far more often than nixpkgs tracks it; numtide's flake
+    # follows upstream releases closely. No nixpkgs.follows: their tree expects
+    # its own pin.
+    llm-agents.url = "github:numtide/llm-agents.nix";
+
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
