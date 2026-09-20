@@ -36,6 +36,83 @@ let
       >/dev/null 2>&1 &
     exec ${pkgs.swappy}/bin/swappy "$@"
   '';
+  # Volume keys, with the change made audible the way JaKooLit's config does
+  # it with canberra: the freedesktop volume-change sound is played through
+  # the sink after a change, so the blip is itself at the new level and tells
+  # you how loud things now are. pw-play like the shutter wrappers above,
+  # rather than pulling in libcanberra for one sound.
+  #
+  # The stepping lives here, rather than in the keybind, so the sound can be
+  # conditional. One rule covers every case: play when the state actually
+  # changed and we are not left muted. At the ceiling wpctl clamps to a no-op,
+  # so nothing sounds and the shell's OSD correctly stays hidden; muting is
+  # silent because the blip would be inaudible anyway, while unmuting sounds,
+  # which is the moment you want to hear the level.
+  #
+  # 100% is a stop on the way down, wherever above it you started, and also
+  # where unmuting lands from higher: that is the unamplified level, and
+  # coming back from muted straight to an amplified one is a nasty surprise.
+  # Unmuting from silence lands at 50%, since unmuting to nothing audible
+  # leaves you pressing keys wondering what broke.
+  #
+  # The limit and the step are arguments, so hypr-vars.lua stays the one place
+  # they are set.
+  volume-step = pkgs.writeShellScriptBin "volume-step" ''
+    set -eu
+    dir=''${1:?usage: volume-step up|down|mute <max> <step>}
+    max=''${2:-1}
+    step=''${3:-10}
+    wpctl=${pkgs.wireplumber}/bin/wpctl
+    sink=@DEFAULT_AUDIO_SINK@
+
+    before=$($wpctl get-volume $sink)
+    cur=$(echo "$before" | ${pkgs.gawk}/bin/awk '{print $2}')
+
+    case "$dir" in
+      up)
+        $wpctl set-mute $sink 0
+        $wpctl set-volume -l "$max" $sink "$step%+"
+        ;;
+      down)
+        $wpctl set-mute $sink 0
+        if ${pkgs.gawk}/bin/awk "BEGIN{exit !($cur > 1)}"; then
+          $wpctl set-volume $sink 1
+        else
+          $wpctl set-volume $sink "$step%-"
+        fi
+        ;;
+      mute)
+        $wpctl set-mute $sink toggle
+        # Unmuting should give back something usable: above 100% comes back
+        # to 100% rather than amplified and loud, and silence comes back at
+        # 50% rather than unmuting to nothing audible. Muting is left alone.
+        now=$($wpctl get-volume $sink)
+        case "$now" in
+          *MUTED*) ;;
+          *)
+            v=$(echo "$now" | ${pkgs.gawk}/bin/awk '{print $2}')
+            if ${pkgs.gawk}/bin/awk "BEGIN{exit !($v > 1)}"; then
+              $wpctl set-volume $sink 1
+            elif ${pkgs.gawk}/bin/awk "BEGIN{exit !($v <= 0)}"; then
+              $wpctl set-volume $sink 0.5
+            fi
+            ;;
+        esac
+        ;;
+      *)
+        echo "volume-step: direction must be up, down or mute" >&2
+        exit 2
+        ;;
+    esac
+
+    after=$($wpctl get-volume $sink)
+    [ "$before" = "$after" ] && exit 0
+    case "$after" in *MUTED*) exit 0 ;; esac
+
+    setsid ${pkgs.pipewire}/bin/pw-play \
+      ${pkgs.sound-theme-freedesktop}/share/sounds/freedesktop/stereo/audio-volume-change.oga \
+      >/dev/null 2>&1 &
+  '';
   caelestia-cli' =
     inputs.caelestia-shell.inputs.caelestia-cli.packages.${pkgs.system}.default.override
       {
@@ -120,6 +197,7 @@ in
           ];
         })
         firefox
+        volume-step
         # Browser integration needs a native messaging manifest per browser.
         # KeePassXC writes those itself when you tick a browser under
         # Settings > Browser Integration, and rewrites them at every launch
