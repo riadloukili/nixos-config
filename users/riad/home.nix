@@ -166,7 +166,6 @@ in
         ncdu
         fastfetch
         pokemon-colorscripts
-        btop
         yazi
         ueberzugpp
         cava
@@ -334,6 +333,35 @@ in
       enable = true;
       flags = [ "--disable-up-arrow" ];
     };
+  };
+
+  # btop in Catppuccin Macchiato, taken from the packaged catppuccin, which
+  # carries that flavour and only that one — no fetch, no hash to keep
+  # current.
+  #
+  # The theme is copied into a derivation of its own rather than handed over
+  # as "${pkgs.catppuccin}/btop/...". programs.btop.themes branches on
+  # lib.isStorePath, and a store *subpath* fails that test: the option would
+  # then treat the path as the theme's text and write the string itself into
+  # the file. A derivation whose output is the file passes.
+  #
+  # Declaring settings makes btop.conf a store symlink, so changes made from
+  # inside the TUI stop persisting. Nothing was lost — it still held btop's
+  # untouched defaults — but that is the trade for the theme living here.
+  # caelestia keeps writing its own caelestia.theme alongside this one from
+  # the current colour scheme; it simply goes unselected now.
+  programs.btop = {
+    enable = true;
+    settings = {
+      color_theme = "catppuccin_macchiato";
+      # Let the terminal show through instead of painting the theme's own
+      # base over it — btop's wording: "set to False if you want terminal
+      # background transparency". Everything else stays Macchiato.
+      theme_background = false;
+    };
+    themes.catppuccin_macchiato = pkgs.runCommandLocal "btop-catppuccin-macchiato" { } ''
+      cp ${pkgs.catppuccin}/btop/catppuccin_macchiato.theme $out
+    '';
   };
 
   # Desktop shell: caelestia (Quickshell) with its CLI. Their execs.lua starts
