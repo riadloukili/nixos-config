@@ -323,10 +323,24 @@ in
   programs.caelestia = lib.mkIf desktop {
     enable = true;
     systemd.enable = false;
-    package = inputs.caelestia-shell.packages.${pkgs.system}.with-cli.override {
-      caelestia-cli = caelestia-cli';
-      swappy = swappy-shutter;
-    };
+    # Above 100% the volume is amplified rather than merely loud, so the OSD
+    # slider goes red there. caelestia has no setting for it and the QML is in
+    # the store, so the one colour in FilledSlider is patched. --replace-fail
+    # means an upstream change to that line breaks the build rather than
+    # quietly dropping the cue. FilledSlider is the OSD's alone, and the
+    # brightness slider that shares it cannot exceed 1, so nothing else reddens.
+    package =
+      (inputs.caelestia-shell.packages.${pkgs.system}.with-cli.override {
+        caelestia-cli = caelestia-cli';
+        swappy = swappy-shutter;
+      }).overrideAttrs
+        (prev: {
+          postPatch = (prev.postPatch or "") + ''
+            substituteInPlace components/controls/FilledSlider.qml \
+              --replace-fail 'color: Colours.palette.m3secondary' \
+                'color: root.value > 1 ? Colours.palette.m3error : Colours.palette.m3secondary'
+          '';
+        });
     cli = {
       enable = true;
       package = caelestia-cli';
