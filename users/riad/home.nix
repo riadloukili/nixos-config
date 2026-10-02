@@ -191,6 +191,7 @@ in
         mermaid-cli
         awscli2
         azure-cli
+        powershell # pwsh
         openfortivpn # needs root for the tun device: sudo openfortivpn
         llm-agents.claude-code
         llm-agents.codex
