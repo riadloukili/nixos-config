@@ -3,6 +3,25 @@
 {
   flake.modules.nixos."desktop/fonts" =
     { pkgs, ... }:
+    let
+      # caelestia's shell text font. The shell loads its own copy from its
+      # assets, so only the shell can see that one; installed here, everything
+      # else can (fuzzel's pickers, to match the shell). Not in nixpkgs or the
+      # google-fonts snapshot, so straight from the upstream release.
+      google-sans-flex = pkgs.stdenvNoCC.mkDerivation rec {
+        pname = "google-sans-flex";
+        version = "4.007";
+        src = pkgs.fetchzip {
+          url = "https://github.com/googlefonts/googlesans-flex/releases/download/v${version}/GoogleSansFlex-v${version}.zip";
+          stripRoot = false;
+          hash = "sha256-zYA3Tke3J2QUKJBSj4qAVDvmgFyndMhSuJKjy7uLiiM=";
+        };
+        installPhase = ''
+          install -Dm444 -t $out/share/fonts/truetype *.ttf
+        '';
+        meta.license = pkgs.lib.licenses.ofl;
+      };
+    in
     {
       fonts = {
         enableDefaultPackages = true;
@@ -11,6 +30,7 @@
           nerd-fonts.jetbrains-mono
           nerd-fonts.fira-code
           inter
+          google-sans-flex
 
           # Unicode coverage.
           noto-fonts
