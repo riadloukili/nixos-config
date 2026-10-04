@@ -31,6 +31,7 @@
           nerd-fonts.fira-code
           inter
           google-sans-flex
+          material-symbols # caelestia's icons; its shell sees its own copy, the clip picker this one
 
           # Unicode coverage.
           noto-fonts

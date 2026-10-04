@@ -198,6 +198,23 @@ in
         llm-agents.ccusage
       ]
       ++ lib.optionals desktop [
+        # qs, for the clip picker in the dotfiles (clip-picker/): the same
+        # Quickshell caelestia runs on, built exactly as its flake and
+        # nix/default.nix build it, so it is the store path the shell already
+        # has (from the cache) rather than a from-source build of its own.
+        (
+          (
+            inputs.caelestia-shell.inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default.override
+            {
+              withX11 = false;
+              withI3 = false;
+            }
+          ).withModules
+          [
+            pkgs.qt6.qtimageformats
+            inputs.caelestia-shell.inputs.m3shapes.packages.${pkgs.stdenv.hostPlatform.system}.default
+          ]
+        )
         # dev toolchains and apps: workstations only
         gh
         glab
