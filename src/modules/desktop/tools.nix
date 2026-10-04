@@ -14,6 +14,13 @@
       # them on plug is riad's udiskie (users/riad/home.nix).
       services.gvfs.enable = true;
 
+      # caelestia's screen recorder (caelestia record) runs gpu-screen-recorder,
+      # which caelestia-cli already bundles. Capturing a monitor (-w eDP-1)
+      # goes through gsr-kms-server, which needs cap_sys_admin; without a
+      # setcap wrapper it is started through pkexec, which exits 127 when
+      # authorisation fails -- recording from the shell then fails outright.
+      programs.gpu-screen-recorder.enable = true;
+
       environment.systemPackages = with pkgs; [
         libnotify # notify-send
         hyprpolkitagent
