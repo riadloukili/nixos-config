@@ -1,0 +1,8 @@
+[files]
+extend-exclude = ["secrets/**", "flake.lock", "**/*.png"]
+
+[default.extend-words]
+# Horizon Forbidden West subfunction names and Nix vocabulary
+eleuthia = "eleuthia"
+hades = "hades"
+nixd = "nixd"

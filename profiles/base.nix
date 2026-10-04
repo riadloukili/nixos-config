@@ -1,14 +1,17 @@
-{ config, pkgs, lib, ... }:
-
+# Every machine.
+{ mods, ... }:
 {
-  imports = [
-    ../modules/services/garbage-collection.nix
-  ];
-
-  mySystem.packages = [
-    pkgs.git
-    pkgs.vim
-    pkgs.htop
-    pkgs.tmux
-  ];
+  flake.modules.nixos."profiles/base" = {
+    imports = with mods.nixos; [
+      nix
+      locale
+      nh
+      ssh
+      shell
+      sudo
+      packages
+      home-manager
+      secrets
+    ];
+  };
 }
