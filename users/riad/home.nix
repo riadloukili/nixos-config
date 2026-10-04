@@ -30,10 +30,20 @@ let
   '';
   # The shell's own area picker (region/freeze) captures internally and hands
   # off to swappy, so the click comes from a swappy that plays the sound first.
+  # The capture also goes straight to the clipboard: closing swappy keeps it
+  # there with no Ctrl+C, and copying from swappy after editing replaces it.
   swappy-shutter = pkgs.writeShellScriptBin "swappy" ''
     setsid ${pkgs.pipewire}/bin/pw-play \
       ${pkgs.sound-theme-freedesktop}/share/sounds/freedesktop/stereo/screen-capture.oga \
       >/dev/null 2>&1 &
+    prev=
+    for arg in "$@"; do
+      case $prev in -f | --file)
+        [ -f "$arg" ] && ${pkgs.wl-clipboard}/bin/wl-copy --type image/png <"$arg"
+        ;;
+      esac
+      prev=$arg
+    done
     exec ${pkgs.swappy}/bin/swappy "$@"
   '';
   # Volume keys, with the change made audible the way JaKooLit's config does
